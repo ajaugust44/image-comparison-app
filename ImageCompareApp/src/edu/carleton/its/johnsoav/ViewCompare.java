@@ -9,7 +9,10 @@ public class ViewCompare implements SubView{
 
 	public static final int numRows = 2;
 	public static final int numCompareImages = 6;
+	public final int buttonHeight = 50;
+	
 	private final int padding = 10;
+	
 	
 	PApplet parent;
 	ICController controller;
@@ -18,6 +21,8 @@ public class ViewCompare implements SubView{
 	ClickableImage mainImage;
 	
 	Integer selectedImage;
+	
+	Button[] buttonList;
 	
 	
 	public ViewCompare(PApplet p) {
@@ -32,6 +37,8 @@ public class ViewCompare implements SubView{
 		
 		this.drawSelectedBox();
 		this.drawImages();
+		this.drawButtons();
+		
 	}
 	
 	public void drawImages() {
@@ -62,11 +69,36 @@ public class ViewCompare implements SubView{
 		parent.popStyle();
 	}
 	
+	public void drawButtons() {
+		if (buttonList == null) {
+			initButtons();
+		}
+		for (int i = 0; i < buttonList.length; i++) {
+			buttonList[i].draw();
+		}
+	}
+	
 	public void mousePressed() {
 		for (int i = 0; i < compareImages.length; i++) {
 			if (compareImages[i] != null && compareImages[i].clicked()) {
 				this.selectImage(i);
 			}
+		}
+	}
+	
+	public void initButtons() {
+		final int[][] buttonInfo = {
+				{parent.width - buttonHeight, parent.height / 2 - buttonHeight, 50, buttonHeight}
+		};
+		final String[] buttonNames = {
+				"testButton"
+		};
+		this.buttonList = new Button[buttonNames.length];
+		
+		for (int i = 0; i < buttonNames.length; i++) {
+			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
+					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
+					buttonNames[i]);
 		}
 	}
 	
@@ -120,10 +152,10 @@ public class ViewCompare implements SubView{
 	}
 	
 	public int getSmallImageWidth() {
-		return (parent.width - (mainImage.x + mainImage.width) - (5 * padding))/3;
+		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
 	}
 	public int getSmallImageHeight() {
-		return (parent.height - (padding * 3)) / 2;
+		return ((parent.height) - (padding * 3)) / 2;
 	}
 	
 	
@@ -132,7 +164,6 @@ public class ViewCompare implements SubView{
 		if (img == null) {
 			return null;
 		}
-		
 		return new int[] {img.x, img.y, img.width, img.height};
 	}
 	
