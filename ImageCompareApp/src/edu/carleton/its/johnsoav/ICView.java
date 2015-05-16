@@ -1,0 +1,70 @@
+package edu.carleton.its.johnsoav;
+
+import java.awt.image.BufferedImage;
+
+import processing.core.*;
+
+public class ICView extends PApplet implements ICViewInterface{
+	
+	private static final long serialVersionUID = 1L;	
+	
+	public static final int VIEW_COMPARE_ID = 0;
+
+	public static final int backgroundColor = 200;
+	
+	private final int WIDTH = 1500;
+	private final int HEIGHT = 800;
+
+	public int currView;
+	
+	ICController controller;
+	
+	SubView[] views;
+	
+	
+	public void setup() {
+		size(min(WIDTH, displayWidth), min(displayHeight - 100, HEIGHT));
+		this.controller = new ICController();
+		this.controller.setView(this);
+		initViews();
+		
+		views[currView].setup();
+		
+	}
+	
+	public void draw() {
+		views[currView].draw();
+		
+	}
+	
+	public void initViews() {
+		views = new SubView[1];
+		views[0] = new ViewCompare(this);
+		currView = 0;
+		views[0].setController(this.controller);
+	}
+	
+	
+	public void mousePressed() {
+		views[currView].mousePressed();
+	}
+
+	public void keyPressed() {
+		views[currView].keyPressed(keyCode);
+	}
+	
+	public void setController(ICController c) {
+		this.controller = c;
+	}
+	
+	@Override
+	public BufferedImage[] setNeighbors(int numNeighbors) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static void main(String[] args) {
+	}
+
+
+}
