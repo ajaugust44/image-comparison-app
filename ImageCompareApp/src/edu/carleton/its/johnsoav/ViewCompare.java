@@ -17,6 +17,8 @@ public class ViewCompare implements SubView{
 	PApplet parent;
 	ICController controller;
 		
+	
+	int currCompareImages;
 	ClickableImage[] compareImages;
 	ClickableImage mainImage;
 	
@@ -30,7 +32,7 @@ public class ViewCompare implements SubView{
 	}
 	
 	public void setup() {
-		imageSetup();
+		nextImage();
 	}
 	
 	public void draw() {
@@ -84,6 +86,18 @@ public class ViewCompare implements SubView{
 				this.selectImage(i);
 			}
 		}
+		for (int i = 0; i < buttonList.length; i++) {
+			if (buttonList[i] != null && buttonList[i].clicked()) {
+				switch(i) {
+				case 0:
+					
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		
 	}
 	
 	public void initButtons() {
@@ -102,7 +116,7 @@ public class ViewCompare implements SubView{
 		}
 	}
 	
-	public void imageSetup() {
+	public void nextImage() {
 		this.selectedImage = null;
 		
 		if (mainImage != null) {
@@ -117,7 +131,7 @@ public class ViewCompare implements SubView{
 		
 		
 		String mainImagePath = controller.getMainCompareImagePath();
-		String[] compareImagePaths = controller.getCompareImagePaths();
+		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages);
 		if (mainImagePath == null) {
 			mainImage = null;
 			this.selectedImage = null;
@@ -150,6 +164,7 @@ public class ViewCompare implements SubView{
 		
 		System.gc();
 	}
+	
 	
 	public int getSmallImageWidth() {
 		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
@@ -187,10 +202,10 @@ public class ViewCompare implements SubView{
 	
 	@Override
 	public void keyPressed(int key) {
-		this.parent.background(ICView.backgroundColor);
 		if (selectedImage != null && selectedImage < compareImages.length && (key == PApplet.RETURN || key == PApplet.ENTER)) {
 			this.controller.setSelected(this.compareImages[this.selectedImage].path);
-			imageSetup();
+			this.parent.background(ICView.backgroundColor);
+			nextImage();
 		} else if( key > KeyEvent.VK_0 && key <= KeyEvent.VK_6) {
 			selectImage((key - 1) - KeyEvent.VK_0);
 		} else if ( key == KeyEvent.VK_S) {

@@ -71,14 +71,14 @@ public class ICController {
 		return null;
 	}
 	
-	public String[] getCompareImagePaths() {
+	public String[] getCompareImagePaths(int numPaths) {
 		if (jpgImages == null) {
 			this.initImages();
 		}
 		if (neighborGenerator == null) {
 			this.initGenerator();
 		}
-		String[] neighbors = neighborGenerator.getCompareImages();
+		String[] neighbors = neighborGenerator.getCompareImages(numPaths);
 		return neighbors;
 	}
 	
