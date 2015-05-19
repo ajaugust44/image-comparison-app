@@ -4,11 +4,12 @@ import java.awt.image.BufferedImage;
 
 import processing.core.*;
 
-public class ICView extends PApplet implements ICViewInterface{
+public class ICView extends PApplet{
 	
 	private static final long serialVersionUID = 1L;	
 	
 	public static final int VIEW_COMPARE_ID = 0;
+	public static final int VIEW_REVIEW_ID = 1;
 
 	public static final int backgroundColor = 200;
 	
@@ -33,15 +34,22 @@ public class ICView extends PApplet implements ICViewInterface{
 	}
 	
 	public void draw() {
+		if (currView != views[currView].switchViews()) {
+			currView = views[currView].switchViews();
+			views[currView].setup();
+		}
 		views[currView].draw();
-		
 	}
 	
 	public void initViews() {
-		views = new SubView[1];
+		views = new SubView[2];
+		
 		views[0] = new ViewCompare(this);
 		currView = 0;
 		views[0].setController(this.controller);
+		
+		views[1] = new ViewReview(this);
+		views[1].setController(this.controller);
 	}
 	
 	
@@ -55,12 +63,6 @@ public class ICView extends PApplet implements ICViewInterface{
 	
 	public void setController(ICController c) {
 		this.controller = c;
-	}
-	
-	@Override
-	public BufferedImage[] setNeighbors(int numNeighbors) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public static void main(String[] args) {

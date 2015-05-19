@@ -26,9 +26,11 @@ public class ViewCompare implements SubView{
 	
 	Button[] buttonList;
 	
+	int switchViews;
 	
 	public ViewCompare(PApplet p) {
 		this.parent = p;
+		switchViews = ICView.VIEW_COMPARE_ID;
 	}
 	
 	public void setup() {
@@ -86,18 +88,7 @@ public class ViewCompare implements SubView{
 				this.selectImage(i);
 			}
 		}
-		for (int i = 0; i < buttonList.length; i++) {
-			if (buttonList[i] != null && buttonList[i].clicked()) {
-				switch(i) {
-				case 0:
-					
-					break;
-				default:
-					break;
-				}
-			}
-		}
-		
+		clickButtons();
 	}
 	
 	public void initButtons() {
@@ -105,7 +96,7 @@ public class ViewCompare implements SubView{
 				{parent.width - buttonHeight, parent.height / 2 - buttonHeight, 50, buttonHeight}
 		};
 		final String[] buttonNames = {
-				"testButton"
+				"Save and\nReview"
 		};
 		this.buttonList = new Button[buttonNames.length];
 		
@@ -113,6 +104,23 @@ public class ViewCompare implements SubView{
 			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
 					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
 					buttonNames[i]);
+		}
+	}
+	
+	public void clickButtons() {
+		for (int i = 0; i < buttonList.length; i++) {
+			if (buttonList[i] != null && buttonList[i].clicked()) {
+				switch(i) {
+				case 0:
+					// "End Session" -- switch to ViewReview
+					controller.save();
+					controller.resetCounts();
+					this.switchViews = ICView.VIEW_REVIEW_ID;
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 	
@@ -210,10 +218,13 @@ public class ViewCompare implements SubView{
 			selectImage((key - 1) - KeyEvent.VK_0);
 		} else if ( key == KeyEvent.VK_S) {
 			controller.save();
+		} else if ( key == PApplet.ESC)  {
+			controller.save();
+			parent.exit();
 		}
 	}
 	
-
-	
-	
+	public int switchViews() {
+		return this.switchViews;
+	}
 }
