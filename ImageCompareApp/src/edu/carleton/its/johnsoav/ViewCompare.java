@@ -17,6 +17,8 @@ public class ViewCompare implements SubView{
 	PApplet parent;
 	ICController controller;
 		
+	
+	int currCompareImages;
 	ClickableImage[] compareImages;
 	ClickableImage mainImage;
 	
@@ -24,13 +26,15 @@ public class ViewCompare implements SubView{
 	
 	Button[] buttonList;
 	
+	int switchViews;
 	
 	public ViewCompare(PApplet p) {
 		this.parent = p;
+		switchViews = ICView.VIEW_COMPARE_ID;
 	}
 	
 	public void setup() {
-		imageSetup();
+		nextImage();
 	}
 	
 	public void draw() {
@@ -84,6 +88,7 @@ public class ViewCompare implements SubView{
 				this.selectImage(i);
 			}
 		}
+		clickButtons();
 	}
 	
 	public void initButtons() {
@@ -91,7 +96,7 @@ public class ViewCompare implements SubView{
 				{parent.width - buttonHeight, parent.height / 2 - buttonHeight, 50, buttonHeight}
 		};
 		final String[] buttonNames = {
-				"testButton"
+				"Save and\nReview"
 		};
 		this.buttonList = new Button[buttonNames.length];
 		
@@ -102,7 +107,24 @@ public class ViewCompare implements SubView{
 		}
 	}
 	
-	public void imageSetup() {
+	public void clickButtons() {
+		for (int i = 0; i < buttonList.length; i++) {
+			if (buttonList[i] != null && buttonList[i].clicked()) {
+				switch(i) {
+				case 0:
+					// "End Session" -- switch to ViewReview
+					controller.save();
+					controller.resetCounts();
+					this.switchViews = ICView.VIEW_REVIEW_ID;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+	
+	public void nextImage() {
 		this.selectedImage = null;
 		
 		if (mainImage != null) {
@@ -117,7 +139,7 @@ public class ViewCompare implements SubView{
 		
 		
 		String mainImagePath = controller.getMainCompareImagePath();
-		String[] compareImagePaths = controller.getCompareImagePaths();
+		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages);
 		if (mainImagePath == null) {
 			mainImage = null;
 			this.selectedImage = null;
@@ -150,6 +172,7 @@ public class ViewCompare implements SubView{
 		
 		System.gc();
 	}
+	
 	
 	public int getSmallImageWidth() {
 		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
@@ -187,18 +210,21 @@ public class ViewCompare implements SubView{
 	
 	@Override
 	public void keyPressed(int key) {
-		this.parent.background(ICView.backgroundColor);
 		if (selectedImage != null && selectedImage < compareImages.length && (key == PApplet.RETURN || key == PApplet.ENTER)) {
 			this.controller.setSelected(this.compareImages[this.selectedImage].path);
-			imageSetup();
+			this.parent.background(ICView.backgroundColor);
+			nextImage();
 		} else if( key > KeyEvent.VK_0 && key <= KeyEvent.VK_6) {
 			selectImage((key - 1) - KeyEvent.VK_0);
 		} else if ( key == KeyEvent.VK_S) {
 			controller.save();
+		} else if ( key == PApplet.ESC)  {
+			controller.save();
+			parent.exit();
 		}
 	}
 	
-
-	
-	
+	public int switchViews() {
+		return this.switchViews;
+	}
 }

@@ -10,4 +10,6 @@ public interface SubView {
 	
 	public void setController(ICController controller);
 	public void keyPressed(int key);
+	
+	public int switchViews();
 }

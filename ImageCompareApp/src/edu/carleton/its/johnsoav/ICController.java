@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class ICController {
 	
-	ICViewInterface view;
+	ICView view;
 	ICModelInterface model;
 	
 	ArrayList<String> jpgImages;
@@ -17,6 +17,8 @@ public class ICController {
 	
 	ImageCompare neighborGenerator;
 	
+	String[][] matched;
+	String[][] approved;
 	
 	public ICController() {
 		currMainImage = -1;
@@ -25,7 +27,7 @@ public class ICController {
 		this.model.setController(this);
 	}
 	
-	public void setView(ICViewInterface view) {
+	public void setView(ICView view) {
 		this.view = view;
 	}
 	
@@ -48,12 +50,12 @@ public class ICController {
 	}
 	
 	public void save() {
-		String[][] imagesMatched = new String[this.currMainImage + 1][2];
+		matched = new String[this.currMainImage][2];
 		for (int i = 0; i < this.currMainImage; i++) {
-			imagesMatched[i][1] = this.selectedCompares[i];
-			imagesMatched[i][0] = this.tifImages.get(i);
+			matched[i][1] = this.selectedCompares[i];
+			matched[i][0] = this.tifImages.get(i);
 		}
-		model.saveSession(imagesMatched);
+		model.saveSession(matched);
 	}
 	
 	
@@ -71,15 +73,35 @@ public class ICController {
 		return null;
 	}
 	
-	public String[] getCompareImagePaths() {
+	public String[] getCompareImagePaths(int numPaths) {
 		if (jpgImages == null) {
 			this.initImages();
 		}
 		if (neighborGenerator == null) {
 			this.initGenerator();
 		}
-		String[] neighbors = neighborGenerator.getCompareImages();
+		String[] neighbors = neighborGenerator.getCompareImages(numPaths);
 		return neighbors;
+	}
+	
+	public void resetCounts() {
+		this.currMainImage = -1;
+	}
+	
+	public String[] getNextMatch() {
+		this.currMainImage ++;
+		if (currMainImage >= matched.length) {
+			return null;
+		}
+		return matched[currMainImage];
+	}
+
+	public void approve() {
+		if (this.approved == null) {
+			this.approved = new String[this.matched.length][2];
+		}
+		this.approved[currMainImage][0] = this.matched[currMainImage][0];
+		this.approved[currMainImage][1] = this.matched[currMainImage][1];
 	}
 	
 	

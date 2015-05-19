@@ -178,9 +178,9 @@ public class ImageCompare {
 		return this.mainPaths[this.mainImageID];
 	}
 
-	public String[] getCompareImages() {
+	public String[] getCompareImages(int k) {
 		if (this.nearestNeighbors == null) {
-			this.getKNN(ViewCompare.numCompareImages);
+			this.getKNN(k);
 		}
 		String[] res = new String[this.nearestNeighbors.length];
 		for (int i = 0; i < this.nearestNeighbors.length; i ++) {
