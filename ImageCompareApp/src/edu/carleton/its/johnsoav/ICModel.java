@@ -6,21 +6,55 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ICModel implements ICModelInterface {
 
+/**
+ * The model interacts solely with the controller, providing information from
+ * the file system about images.
+ * 
+ * TODO: This is where the controller should get information about an image's
+ * nearest neighbors
+ * 
+ * @author Avery Johnson
+ *
+ */
+public class ICModel {
+
+	/*
+	 * ----------------------
+	 * 
+	 * 	Path information
+	 * 
+	 * ----------------------
+	 */
+	
 	public static final String IMAGE_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/";
 	public static final String JPEG_FOLDER = "jpgSmallTest/";
 	public static final String TIFF_FOLDER = "tiffSmallTest/";
 	public static final String OUTPUT_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/output/";
 	
-	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Instance Variables
+	 * 
+	 * ----------------------
+	 */
 	private ArrayList<String> tifSet;
 	private ArrayList<String> jpgSet;
 	public ICController controller;
 	
 	public String[][] matchedImages;
 	
-	@Override
+	ImageCompare neighborGenerator;
+	int mainImageID;
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Set initialization
+	 * 
+	 * ----------------------
+	 */
 	public ArrayList<String> getJPGImages() {
 		if(jpgSet == null) {
 			jpgSet = getAllImagesInFolder(new File(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
@@ -29,7 +63,6 @@ public class ICModel implements ICModelInterface {
 		return jpgSet;
 	}
 	
-	@Override
 	public ArrayList<String> getTIFImages() {
 		if(tifSet == null) {
 			tifSet = getAllImagesInFolder(new File(ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER));
@@ -38,25 +71,77 @@ public class ICModel implements ICModelInterface {
 		return tifSet;
 	}
 	
+	public void initImageSets() {
+		tifSet = this.getAllImagesInFolder(new File(
+				ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER));
+		jpgSet = this.getAllImagesInFolder(new File(
+				ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
+	}
 	
-	@Override
-	public boolean saveSession(String[][] imagesMatched) {
-		this.matchedImages = imagesMatched; 
-		return this.writeToFile();
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Neighbor Generator
+	 * 
+	 * ----------------------
+	 */
+	
+	public void initGenerator() {
+		if (this.jpgSet == null || this.tifSet == null) {
+			this.initImageSets();
+		}
+		this.neighborGenerator = new ImageCompare(this.jpgSet, this.tifSet);
+		this.mainImageID = 0;
+		neighborGenerator.setMainImage(this.mainImageID);
 	}
-
-	@Override
-	public String[] restoreSession(String sessionName) {
-		// TODO Auto-generated method stub
-		return new String[] {"SESSION"};
+	
+	public void nextMainImage() {
+		if (this.neighborGenerator == null) {
+			this.initGenerator();
+		}
+		this.mainImageID ++;
+		this.neighborGenerator.setMainImage(this.mainImageID);
 	}
-
-	@Override
-	public boolean writeToLog(String imagesMatched) {
-		// TODO Auto-generated method stub
-		return false;
+	
+	public void prevMainImage() {
+		if (this.neighborGenerator == null) {
+			this.initGenerator();
+		}
+		this.mainImageID --;
+		this.neighborGenerator.setMainImage(this.mainImageID);
 	}
-
+	
+	public String[] getNearestImages(int numNeighbors) {
+		if (this.neighborGenerator == null) {
+			this.initGenerator();
+		}
+		return this.neighborGenerator.getCompareImages(numNeighbors);
+	}
+	
+	
+	public String getMainPath() {
+		if (this.neighborGenerator == null) {
+			this.initGenerator();
+		}
+		return this.neighborGenerator.getMainImagePath();
+	}
+	
+	public String[] getCompareImages(int numPaths) {
+		if (this.neighborGenerator == null) {
+			this.initGenerator();
+		}
+		return this.neighborGenerator.getCompareImages(numPaths);
+	}
+	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	File System Methods
+	 * 
+	 * ----------------------
+	 */
 	
 	public ArrayList<String> getAllImagesInFolder(final File folder) {
 		ArrayList<String> res = new ArrayList<String>();
@@ -70,23 +155,28 @@ public class ICModel implements ICModelInterface {
 	    return res;
 	}
 	
-	public void getImageSets() {
-		tifSet = this.getAllImagesInFolder(new File(
-				ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER));
-		jpgSet = this.getAllImagesInFolder(new File(
-				ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
-	}
-	
-	public String getImageName(String filePath) {
-		String[] splitPath = filePath.split("/");
-    	return splitPath[splitPath.length - 1];
+	public boolean saveSession(String[][] imagesMatched) {
+		this.matchedImages = imagesMatched; 
+		return this.writeToFile();
 	}
 
-	@Override
-	public void setController(ICController controller) {
-		this.controller = controller;
+	public String[] restoreSession(String sessionName) {
+		// TODO model: create load function
+		return new String[] {"SESSION"};
+	}
+
+	public boolean writeToLog(String imagesMatched) {
+		// TODO model: write changed files to master log
+		return false;
 	}
 	
+	/*
+	 * ----------------------
+	 * 
+	 * 	FIXME Methods
+	 * 
+	 * ----------------------
+	 */
 	
 	private String generateFileString(){
 		// in format:
@@ -99,10 +189,6 @@ public class ICModel implements ICModelInterface {
 		}
 		
 		return outputString;
-	}
-	
-	private int getSessionNumber() {
-		return 0;
 	}
 	
 	public boolean writeToFile() {
@@ -129,6 +215,30 @@ public class ICModel implements ICModelInterface {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Helper Methods
+	 * 
+	 * ----------------------
+	 */
+	
+	public String getImageName(String filePath) {
+		String[] splitPath = filePath.split("/");
+    	return splitPath[splitPath.length - 1];
+	}
+	
+	private int getSessionNumber() {
+		//TODO:
+		return 0;
+	}
+	
+	public void setController(ICController controller) {
+		this.controller = controller;
 	}
 	
 }

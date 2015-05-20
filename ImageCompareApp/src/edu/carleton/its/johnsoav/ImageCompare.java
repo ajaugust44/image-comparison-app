@@ -1,7 +1,5 @@
 package edu.carleton.its.johnsoav;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.lang.Math;
 
@@ -10,16 +8,19 @@ import java.lang.Math;
  * It should contain a set of ImageInfos, and a changeable main image such that
  * the k nearest ImageInfos to that main image can be calculated.
  * 
- * @author ajaugust44
+ * @author Avery Johnson
  */
 
 
 public class ImageCompare {
 	
-//	public static void main(String[] args) {
-//		ImageCompare c = new ImageCompare(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER, ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER);
-//		System.out.println(c.getMainImagePath());
-//	}
+	/*
+	 * ----------------------
+	 * 
+	 * 	Instance Variables
+	 * 
+	 * ----------------------
+	 */
 	
 	float[][] compareImages;
 	String[] comparePaths;
@@ -35,16 +36,29 @@ public class ImageCompare {
 	int[] nearestNeighbors;
 	
 
+	/**
+	 * Constructor: Opens and analyzes each image in preparation for the nearest neighbor
+	 * operations
+	 * 
+	 * @param compare
+	 * @param mains
+	 */
 	
-	public ImageCompare(String compareFolder, String mainFolder) {
-		this.getImageSet(compareFolder, mainFolder);
+	public ImageCompare(ArrayList<String> compare, ArrayList<String> mains) {
+		this.getImageSet(compare, mains);
 		this.standardizeData();
 	}
 	
-	public void getImageSet(String compareFolder, String mainFolder) {
-		
-		ArrayList<String> compare = this.getAllImagesInFolder(new File(compareFolder));
-		ArrayList<String> mains = this.getAllImagesInFolder(new File(mainFolder));
+	/**
+	 * This function opens each image and creates an ImageInfo for it,
+	 * then gets the comparable information about the image.
+	 * 
+	 * We cannot keep the ImageInfo because it will cause a memory overflow.
+	 * 
+	 * @param compare: List of jpg image paths
+	 * @param mains: List of tif image paths
+	 */
+	public void getImageSet(ArrayList<String> compare, ArrayList<String> mains) {
 		compareImages = new float[compare.size()][ImageInfo.NUM_CHARS];
 		comparePaths = new String[compare.size()];
 		ImageInfo img;
@@ -62,25 +76,15 @@ public class ImageCompare {
 		}
 		this.mainImageID = -1;
 		this.mainImage = mainList[0];
-		
 	}
 	
-	public ArrayList<String> getAllImagesInFolder(final File folder) {
-		ArrayList<String> res = new ArrayList<String>();
-	    for (final File fileEntry : folder.listFiles()) {
-	        if (fileEntry.isDirectory()) {
-	            res.addAll(getAllImagesInFolder(fileEntry));
-	        } else {
-	        	String fileName = fileEntry.getName();
-	        	if (fileName.charAt(0) != '.')
-	        		res.add(fileEntry.getPath());
-	        }
-	    }
-	    return res;
-	}
-		
+	/**
+	 * Calculates the nearestNeighbors for the current mainImage
+	 * Doesn't take very long for any one image.
+	 * 
+	 * @param k
+	 */
 	public void getKNN(int k) {
-		
 		DistanceQueue neighbors = new DistanceQueue(k);
 		for (int i = 0; i < this.compareImages.length; i ++) {
 			DistanceNode node = new DistanceNode(i, this.standardizedMain[this.mainImageID], this.standardizedCompare[i]);
@@ -95,6 +99,14 @@ public class ImageCompare {
 		}
 	}
 	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Standardization
+	 * 
+	 * ----------------------
+	 */
 	public void standardizeData() {
 		this.standardizedCompare = new float[this.compareImages.length][ImageInfo.NUM_CHARS];
 		this.standardizedMain = new float[this.mainList.length][ImageInfo.NUM_CHARS];
@@ -163,12 +175,23 @@ public class ImageCompare {
 		return standardized;
 	}	
 	
-	public void nextMainImage() {
-		this.mainImageID += 1;
-		if (this.mainImageID >= this.mainList.length) {
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Getters and Setters
+	 * 
+	 * ----------------------
+	 */
+	public void setMainImage(int newID) {
+		if (newID < 0 || newID >= this.mainList.length) {
 			this.mainImage = null;
+			this.nearestNeighbors = null;
 			return;
 		}
+		this.mainImageID = newID;
+		this.nearestNeighbors = null;
+		
 		System.out.println("Updating mainImage " + this.mainImageID + " " + this.mainList.length);
 		this.mainImage = this.mainList[this.mainImageID];
 		this.getKNN(ViewCompare.numCompareImages);

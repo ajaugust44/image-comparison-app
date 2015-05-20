@@ -5,6 +5,26 @@ import java.awt.event.KeyEvent;
 import processing.core.PApplet;
 import processing.core.PImage;
 
+/**
+ * This view is designed so that a user can compare a single large
+ * image on the left with 6 smaller images on the right.
+ * They can select one, then move on to the next screen as necessary
+ * 
+ * TODO: It can also scroll through the nearest neighbors of that image
+ * if a match cannot be found in the first 6 neighbors.
+ * 
+ * TODO: It contains "help", "save and review", "skip", and "save" buttons
+ * 
+ * A user is encouraged to use the keyboard:
+ *  - 's' to save
+ *  - enter or return to move on
+ *  - TODO: space to skip
+ *  - TODO: arrow keys to go back and forth
+ * 
+ * 
+ * @author Avery Johnson
+ *
+ */
 public class ViewCompare implements SubView{
 
 	public static final int numRows = 2;
@@ -93,7 +113,7 @@ public class ViewCompare implements SubView{
 	
 	public void initButtons() {
 		final int[][] buttonInfo = {
-				{parent.width - buttonHeight, parent.height / 2 - buttonHeight, 50, buttonHeight}
+				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
 		};
 		final String[] buttonNames = {
 				"Save and\nReview"

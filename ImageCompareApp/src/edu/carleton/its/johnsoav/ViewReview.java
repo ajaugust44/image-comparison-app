@@ -4,6 +4,24 @@ import java.awt.event.KeyEvent;
 
 import processing.core.PApplet;
 
+
+/**
+ * In this view a user can review, one by one, the images they have already
+ * matched.
+ * 
+ * TODO: A user can mark a match as incorrect, or simply move on
+ * 
+ * TODO: It contains "help", "Mark as Incorrect", and "save" buttons
+ * 	
+ * A user is encouraged to use the keyboard:
+ * TODO: - 's' to save
+ * 	- enter or return to confirm match + move on
+ * TODO: space to mark as incorrect
+ * TODO: arrow keys to go back and forth
+ * 
+ * @author Avery Johnson
+ *
+ */
 public class ViewReview implements SubView {
 
 	PApplet parent;
@@ -24,7 +42,6 @@ public class ViewReview implements SubView {
 	
 	@Override
 	public void setup() {
-		parent.background(ICView.backgroundColor);
 		nextImage();
 	}
 
@@ -35,6 +52,7 @@ public class ViewReview implements SubView {
 		if (compareImage != null)
 			compareImage.done();
 		String[] paths = controller.getNextMatch();
+		parent.background(ICView.backgroundColor);
 		if (paths == null) {
 			return;
 		}
@@ -63,8 +81,8 @@ public class ViewReview implements SubView {
 	}
 	
 	private void drawButtons() {
-		// TODO Auto-generated method stub
-		
+		// maybeDo draw buttons as you write buttons
+		System.out.print("");
 	}
 
 	@Override
@@ -73,7 +91,7 @@ public class ViewReview implements SubView {
 	}
 
 	private void clickButtons() {
-		// TODO Auto-generated method stub
+		// TODO create actions on buttons as you write buttons
 		
 	}
 

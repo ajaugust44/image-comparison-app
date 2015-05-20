@@ -1,9 +1,16 @@
 package edu.carleton.its.johnsoav;
 
-import java.awt.image.BufferedImage;
-
 import processing.core.*;
 
+
+/** 
+ * This acts as the view-model: It initializes some set of
+ * subViews that interact with each other in some way, draws them 
+ * appropriately in the PApplet, and changes them as necessary.
+ * 
+ * @author Avery Johnson
+ *
+ */
 public class ICView extends PApplet{
 	
 	private static final long serialVersionUID = 1L;	

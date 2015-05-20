@@ -2,10 +2,34 @@ package edu.carleton.its.johnsoav;
 
 import java.util.ArrayList;
 
+
+/**
+ * The controller organizes the running of the program.
+ * It gets information about images from the model and transmits
+ * the relevant information to the view.
+ * 
+ * Additional Features: TODO:
+ *	- Load old session
+ *	- save + load calculated information
+ * FIXME:  - LOG changed names 
+ * - asynch loading of images 
+ * 
+ * 
+ * @author Avery Johnson
+ *
+ */
 public class ICController {
 	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Instance Variables
+	 * 
+	 * ----------------------
+	 */
+	
 	ICView view;
-	ICModelInterface model;
+	ICModel model;
 	
 	ArrayList<String> jpgImages;
 	ArrayList<String> tifImages;
@@ -14,11 +38,18 @@ public class ICController {
 	int compareImage;
 	
 	String[] selectedCompares;
-	
-	ImageCompare neighborGenerator;
-	
+
 	String[][] matched;
 	String[][] approved;
+	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Initialization
+	 * 
+	 * ----------------------
+	 */
 	
 	public ICController() {
 		currMainImage = -1;
@@ -27,29 +58,28 @@ public class ICController {
 		this.model.setController(this);
 	}
 	
-	public void setView(ICView view) {
-		this.view = view;
-	}
-	
-	public void setModel(ICModelInterface model) {
-		this.model = model;
-	}
-	
 	public void initImages() {
 		jpgImages = model.getJPGImages();
 		tifImages = model.getTIFImages();
 		selectedCompares = new String[tifImages.size()];
 	}
 	
-	public void initGenerator() {
-		this.neighborGenerator = new ImageCompare(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER, ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER);
-	}
-	
 	public void setSelected(String selectedPath) {
 		this.selectedCompares[this.currMainImage] = selectedPath;
 	}
 	
+	/*
+	 * ----------------------
+	 * 
+	 * 	View Workflow
+	 * 
+	 * ----------------------
+	 */
+	
 	public void save() {
+		if (this.currMainImage < 0) {
+			return;
+		}
 		matched = new String[this.currMainImage][2];
 		for (int i = 0; i < this.currMainImage; i++) {
 			matched[i][1] = this.selectedCompares[i];
@@ -57,32 +87,7 @@ public class ICController {
 		}
 		model.saveSession(matched);
 	}
-	
-	
-	public String getMainCompareImagePath() {
-		if (tifImages == null) {
-			this.initImages();
-		}
-		this.currMainImage += 1;
-		if (this.neighborGenerator == null) {
-			this.initGenerator();
-		}
-		neighborGenerator.nextMainImage();
-		if (this.currMainImage < tifImages.size())
-			return tifImages.get(this.currMainImage);
-		return null;
-	}
-	
-	public String[] getCompareImagePaths(int numPaths) {
-		if (jpgImages == null) {
-			this.initImages();
-		}
-		if (neighborGenerator == null) {
-			this.initGenerator();
-		}
-		String[] neighbors = neighborGenerator.getCompareImages(numPaths);
-		return neighbors;
-	}
+
 	
 	public void resetCounts() {
 		this.currMainImage = -1;
@@ -104,5 +109,33 @@ public class ICController {
 		this.approved[currMainImage][1] = this.matched[currMainImage][1];
 	}
 	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Getters/Setters
+	 * 
+	 * ----------------------
+	 */
+	
+	public void setView(ICView view) {
+		this.view = view;
+	}
+	
+	public void setModel(ICModel model) {
+		this.model = model;
+	}
+	
+	
+	public String getMainCompareImagePath() {
+		return model.getMainPath();
+	}
+	
+	public String[] getCompareImagePaths(int numPaths) {
+		if (jpgImages == null) {
+			this.initImages();
+		}
+		String[] neighbors = model.getCompareImages(numPaths);
+		return neighbors;
+	}
 	
 }
