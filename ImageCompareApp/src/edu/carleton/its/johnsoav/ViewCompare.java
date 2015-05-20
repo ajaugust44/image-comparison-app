@@ -48,6 +48,14 @@ public class ViewCompare implements SubView{
 	
 	int switchViews;
 	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Initializing
+	 * 
+	 * ----------------------
+	 */
+	
 	public ViewCompare(PApplet p) {
 		this.parent = p;
 		switchViews = ICView.VIEW_COMPARE_ID;
@@ -56,6 +64,30 @@ public class ViewCompare implements SubView{
 	public void setup() {
 		nextImage();
 	}
+	
+	public void initButtons() {
+		final int[][] buttonInfo = {
+				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
+		};
+		final String[] buttonNames = {
+				"Save and\nReview"
+		};
+		this.buttonList = new Button[buttonNames.length];
+		
+		for (int i = 0; i < buttonNames.length; i++) {
+			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
+					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
+					buttonNames[i]);
+		}
+	}
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Drawing
+	 * 
+	 * ----------------------
+	 */
 	
 	public void draw() {
 		
@@ -102,47 +134,13 @@ public class ViewCompare implements SubView{
 		}
 	}
 	
-	public void mousePressed() {
-		for (int i = 0; i < compareImages.length; i++) {
-			if (compareImages[i] != null && compareImages[i].clicked()) {
-				this.selectImage(i);
-			}
-		}
-		clickButtons();
-	}
-	
-	public void initButtons() {
-		final int[][] buttonInfo = {
-				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
-		};
-		final String[] buttonNames = {
-				"Save and\nReview"
-		};
-		this.buttonList = new Button[buttonNames.length];
-		
-		for (int i = 0; i < buttonNames.length; i++) {
-			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
-					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
-					buttonNames[i]);
-		}
-	}
-	
-	public void clickButtons() {
-		for (int i = 0; i < buttonList.length; i++) {
-			if (buttonList[i] != null && buttonList[i].clicked()) {
-				switch(i) {
-				case 0:
-					// "End Session" -- switch to ViewReview
-					controller.save();
-					controller.resetCounts();
-					this.switchViews = ICView.VIEW_REVIEW_ID;
-					break;
-				default:
-					break;
-				}
-			}
-		}
-	}
+	/*
+	 * ----------------------
+	 * 
+	 * 	Workflow
+	 * 
+	 * ----------------------
+	 */
 	
 	public void nextImage() {
 		this.selectedImage = null;
@@ -157,10 +155,16 @@ public class ViewCompare implements SubView{
 			}
 		}
 		
+		controller.nextCompareSet();
 		
 		String mainImagePath = controller.getMainCompareImagePath();
 		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages);
+		
+		System.out.println("Set mainImagePath to " + mainImagePath);
+		
 		if (mainImagePath == null) {
+			System.out.println("REACHED END");
+			
 			mainImage = null;
 			this.selectedImage = null;
 			this.compareImages = new ClickableImage[6];
@@ -193,28 +197,6 @@ public class ViewCompare implements SubView{
 		System.gc();
 	}
 	
-	
-	public int getSmallImageWidth() {
-		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
-	}
-	public int getSmallImageHeight() {
-		return ((parent.height) - (padding * 3)) / 2;
-	}
-	
-	
-	public int[] getImageBoxInfo(int imageID) {
-		ClickableImage img = this.compareImages[imageID];
-		if (img == null) {
-			return null;
-		}
-		return new int[] {img.x, img.y, img.width, img.height};
-	}
-	
-	
-	public void setController(ICController controller) {
-		this.controller = controller;
-	}
-
 	public void selectImage(int imageID) {
 		if (selectedImage != null) {
 			System.out.println("selected: " + this.selectedImage.intValue() + " selecting " + imageID);
@@ -227,6 +209,40 @@ public class ViewCompare implements SubView{
 		}
 	}
 	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	User Interaction
+	 * 
+	 * ----------------------
+	 */
+	
+	public void mousePressed() {
+		for (int i = 0; i < compareImages.length; i++) {
+			if (compareImages[i] != null && compareImages[i].clicked()) {
+				this.selectImage(i);
+			}
+		}
+		clickButtons();
+	}
+	
+	
+	public void clickButtons() {
+		for (int i = 0; i < buttonList.length; i++) {
+			if (buttonList[i] != null && buttonList[i].clicked()) {
+				switch(i) {
+				case 0:
+					// "End Session" -- switch to ViewReview
+					controller.save();
+					this.switchViews = ICView.VIEW_REVIEW_ID;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
 	
 	@Override
 	public void keyPressed(int key) {
@@ -244,7 +260,38 @@ public class ViewCompare implements SubView{
 		}
 	}
 	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Helper Functions
+	 * 
+	 * ----------------------
+	 */
+	
 	public int switchViews() {
 		return this.switchViews;
 	}
+	
+	public int getSmallImageWidth() {
+		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
+	}
+	public int getSmallImageHeight() {
+		return ((parent.height) - (padding * 3)) / 2;
+	}
+
+	public void setController(ICController controller) {
+		this.controller = controller;
+	}
+	
+	public int[] getImageBoxInfo(int imageID) {
+		ClickableImage img = this.compareImages[imageID];
+		if (img == null) {
+			return null;
+		}
+		return new int[] {img.x, img.y, img.width, img.height};
+	}
+	
 }
+
+

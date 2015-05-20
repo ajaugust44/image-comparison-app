@@ -99,6 +99,7 @@ public class ICModel {
 	public void nextMainImage() {
 		if (this.neighborGenerator == null) {
 			this.initGenerator();
+			return;
 		}
 		this.mainImageID ++;
 		this.neighborGenerator.setMainImage(this.mainImageID);
@@ -107,9 +108,14 @@ public class ICModel {
 	public void prevMainImage() {
 		if (this.neighborGenerator == null) {
 			this.initGenerator();
+			return;
 		}
 		this.mainImageID --;
 		this.neighborGenerator.setMainImage(this.mainImageID);
+	}
+	
+	public int getMainImageID() {
+		return this.mainImageID;
 	}
 	
 	public String[] getNearestImages(int numNeighbors) {
@@ -119,6 +125,7 @@ public class ICModel {
 		return this.neighborGenerator.getCompareImages(numNeighbors);
 	}
 	
+
 	
 	public String getMainPath() {
 		if (this.neighborGenerator == null) {

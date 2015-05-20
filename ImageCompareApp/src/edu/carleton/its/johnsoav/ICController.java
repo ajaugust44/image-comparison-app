@@ -34,8 +34,8 @@ public class ICController {
 	ArrayList<String> jpgImages;
 	ArrayList<String> tifImages;
 	
-	int currMainImage;
 	int compareImage;
+	int currMatch;
 	
 	String[] selectedCompares;
 
@@ -52,10 +52,10 @@ public class ICController {
 	 */
 	
 	public ICController() {
-		currMainImage = -1;
 		compareImage = 0;
 		this.model = new ICModel();
 		this.model.setController(this);
+		this.currMatch = -1;
 	}
 	
 	public void initImages() {
@@ -65,7 +65,7 @@ public class ICController {
 	}
 	
 	public void setSelected(String selectedPath) {
-		this.selectedCompares[this.currMainImage] = selectedPath;
+		this.selectedCompares[model.getMainImageID()] = selectedPath;
 	}
 	
 	/*
@@ -77,36 +77,40 @@ public class ICController {
 	 */
 	
 	public void save() {
-		if (this.currMainImage < 0) {
+		if (model.getMainImageID() < 0) {
 			return;
 		}
-		matched = new String[this.currMainImage][2];
-		for (int i = 0; i < this.currMainImage; i++) {
-			matched[i][1] = this.selectedCompares[i];
-			matched[i][0] = this.tifImages.get(i);
+		ArrayList<String[]> matchedAL = new ArrayList<String[]>(model.mainImageID);
+		for (int i = 0; i < this.selectedCompares.length; i ++) {
+			if (this.selectedCompares[i] == null) {
+				break;
+			}
+			matchedAL.add(new String[] {this.selectedCompares[i], this.tifImages.get(i)});
 		}
+		
+		matched = new String[matchedAL.size()][2];
+		matchedAL.toArray(matched);
 		model.saveSession(matched);
 	}
 
-	
-	public void resetCounts() {
-		this.currMainImage = -1;
+	public void nextCompareSet() {
+		model.nextMainImage();
 	}
 	
 	public String[] getNextMatch() {
-		this.currMainImage ++;
-		if (currMainImage >= matched.length) {
+		this.currMatch ++;
+		if (currMatch >= matched.length) {
 			return null;
 		}
-		return matched[currMainImage];
+		return matched[currMatch];
 	}
 
 	public void approve() {
 		if (this.approved == null) {
 			this.approved = new String[this.matched.length][2];
 		}
-		this.approved[currMainImage][0] = this.matched[currMainImage][0];
-		this.approved[currMainImage][1] = this.matched[currMainImage][1];
+		this.approved[currMatch][0] = this.matched[currMatch][0];
+		this.approved[currMatch][1] = this.matched[currMatch][1];
 	}
 	
 	/*
@@ -124,7 +128,6 @@ public class ICController {
 	public void setModel(ICModel model) {
 		this.model = model;
 	}
-	
 	
 	public String getMainCompareImagePath() {
 		return model.getMainPath();

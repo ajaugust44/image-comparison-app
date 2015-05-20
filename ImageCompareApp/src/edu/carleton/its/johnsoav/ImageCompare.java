@@ -187,6 +187,7 @@ public class ImageCompare {
 		if (newID < 0 || newID >= this.mainList.length) {
 			this.mainImage = null;
 			this.nearestNeighbors = null;
+			this.mainImageID = this.mainList.length;
 			return;
 		}
 		this.mainImageID = newID;
@@ -198,10 +199,16 @@ public class ImageCompare {
 	}
 
 	public String getMainImagePath() {
+		System.out.println("Entering getMainImagePath in ImageCompare with " + this.mainImageID + " and " + this.mainPaths.length);
+		if (this.mainImageID >= this.mainPaths.length) 
+			return null;
 		return this.mainPaths[this.mainImageID];
 	}
 
 	public String[] getCompareImages(int k) {
+		if (this.mainImage == null) {
+			return null;
+		}
 		if (this.nearestNeighbors == null) {
 			this.getKNN(k);
 		}
