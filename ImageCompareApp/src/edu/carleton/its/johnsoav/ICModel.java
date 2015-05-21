@@ -44,6 +44,7 @@ public class ICModel {
 	public ICController controller;
 	
 	public String[][] matchedImages;
+	public boolean[] approved;
 	
 	ImageCompare neighborGenerator;
 	int mainImageID;
@@ -192,7 +193,11 @@ public class ICModel {
 		String outputString = "tif name\tjpg name\n";
 		
 		for (int i = 0; i < this.matchedImages.length; i++) {
-			outputString += this.matchedImages[i][0] + "\t" + this.matchedImages[i][1] + "\n";
+			outputString += this.matchedImages[i][0] + "\t" + this.matchedImages[i][1];
+			if (this.approved != null) {
+				outputString += (approved[i]) ? "approved" : "condemned";
+			}
+			outputString += "\n";
 		}
 		
 		return outputString;

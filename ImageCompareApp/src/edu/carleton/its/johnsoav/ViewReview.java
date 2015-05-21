@@ -24,6 +24,15 @@ import processing.core.PApplet;
  */
 public class ViewReview implements SubView {
 
+	/*
+	 * ----------------------
+	 * 
+	 * 	Instance Variables
+	 * 
+	 * ----------------------
+	 */
+	
+	
 	PApplet parent;
 	ICController controller;
 	
@@ -35,6 +44,15 @@ public class ViewReview implements SubView {
 	
 	int switchViews;
 	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Initialization
+	 * 
+	 * ----------------------
+	 */
+	
+	
 	public ViewReview(PApplet p) {
 		this.parent = p;
 		this.switchViews = ICView.VIEW_REVIEW_ID;
@@ -45,26 +63,15 @@ public class ViewReview implements SubView {
 		nextImage();
 	}
 
-	private void nextImage() {
-		approved = null;
-		if (mainImage != null) 
-			mainImage.done();
-		if (compareImage != null)
-			compareImage.done();
-		String[] paths = controller.getNextMatch();
-		parent.background(ICView.backgroundColor);
-		if (paths == null) {
-			return;
-		}
-		
-		mainImage = new ClickableImage(parent, paths[0], 0, 0, (int)(parent.width/(2)) - 5, parent.height, true);
-		mainImage.setClickable(false);
-		
-		compareImage = new ClickableImage(parent, paths[1], (int)(parent.width/(2)) + 10, 0, (int)(parent.width/(2)) - 5, parent.height, true);
-		compareImage.setClickable(false);
-		
-	}
-
+	/*
+	 * ----------------------
+	 * 
+	 * 	Drawing
+	 * 
+	 * ----------------------
+	 */
+	
+	
 	@Override
 	public void draw() {
 		drawImages();
@@ -85,6 +92,50 @@ public class ViewReview implements SubView {
 		System.out.print("");
 	}
 
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Workflow
+	 * 
+	 * ----------------------
+	 */
+	
+	private void nextImage() {
+		parent.background(ICView.backgroundColor);
+		
+		approved = null;
+		if (mainImage != null) 
+			mainImage.done();
+		if (compareImage != null)
+			compareImage.done();
+		String[] paths = controller.getNextMatch();
+		
+		if (paths == null) {
+			this.mainImage = null;
+			this.compareImage = null;
+			return;
+		}
+		
+		mainImage = new ClickableImage(parent, paths[0], 0, 0, (int)(parent.width/(2)) - 5, parent.height, true);
+		mainImage.setClickable(false);
+		
+		compareImage = new ClickableImage(parent, paths[1], (int)(parent.width/(2)) + 10, 0, (int)(parent.width/(2)) - 5, parent.height, true);
+		compareImage.setClickable(false);
+		
+	}
+	
+	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	User Interaction
+	 * 
+	 * ----------------------
+	 */
+	
+	
 	@Override
 	public void mousePressed() {
 		clickButtons();
@@ -93,11 +144,6 @@ public class ViewReview implements SubView {
 	private void clickButtons() {
 		// TODO create actions on buttons as you write buttons
 		
-	}
-
-	@Override
-	public void setController(ICController controller) {
-		this.controller = controller;
 	}
 
 	@Override
@@ -113,6 +159,22 @@ public class ViewReview implements SubView {
 			parent.exit();
 		}
 	}
+	
+	
+	/*
+	 * ----------------------
+	 * 
+	 * 	Helper Functions
+	 * 
+	 * ----------------------
+	 */
+	
+	@Override
+	public void setController(ICController controller) {
+		this.controller = controller;
+	}
+
+
 
 	public int switchViews() {
 		return this.switchViews;

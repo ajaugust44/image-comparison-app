@@ -27,27 +27,38 @@ import processing.core.PImage;
  */
 public class ViewCompare implements SubView{
 
+	/*
+	 * ----------------------
+	 * 
+	 * 	Instance variables
+	 * 
+	 * ----------------------
+	 */
+
+
 	public static final int numRows = 2;
 	public static final int numCompareImages = 6;
 	public final int buttonHeight = 50;
-	
+
 	private final int padding = 10;
-	
-	
+
+
 	PApplet parent;
 	ICController controller;
-		
-	
+
+
 	int currCompareImages;
 	ClickableImage[] compareImages;
 	ClickableImage mainImage;
-	
+
 	Integer selectedImage;
-	
+
 	Button[] buttonList;
-	
+	Button[] endButtonList;
+
+
 	int switchViews;
-	
+
 	/*
 	 * ----------------------
 	 * 
@@ -55,32 +66,40 @@ public class ViewCompare implements SubView{
 	 * 
 	 * ----------------------
 	 */
-	
+
 	public ViewCompare(PApplet p) {
 		this.parent = p;
 		switchViews = ICView.VIEW_COMPARE_ID;
 	}
-	
+
 	public void setup() {
 		nextImage();
 	}
-	
+
 	public void initButtons() {
-		final int[][] buttonInfo = {
+		int[][] buttonInfo = {
 				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
 		};
-		final String[] buttonNames = {
+
+		int[][] endButtonInfo = {
+				{parent.width/2 - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
+		};
+
+		String[] buttonNames = {
 				"Save and\nReview"
 		};
 		this.buttonList = new Button[buttonNames.length];
-		
+		this.endButtonList = new Button[buttonNames.length];
 		for (int i = 0; i < buttonNames.length; i++) {
 			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
 					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
 					buttonNames[i]);
+			this.endButtonList[i] = new Button(this.parent, endButtonInfo[i][0],
+					endButtonInfo[i][1], endButtonInfo[i][2], endButtonInfo[i][3],
+					buttonNames[i]);
 		}
 	}
-	
+
 	/*
 	 * ----------------------
 	 * 
@@ -88,15 +107,15 @@ public class ViewCompare implements SubView{
 	 * 
 	 * ----------------------
 	 */
-	
+
 	public void draw() {
-		
+
 		this.drawSelectedBox();
 		this.drawImages();
 		this.drawButtons();
-		
+
 	}
-	
+
 	public void drawImages() {
 		if (mainImage != null) 
 			mainImage.drawImage();
@@ -105,7 +124,7 @@ public class ViewCompare implements SubView{
 				compareImages[i].drawImage();
 		}
 	}
-	
+
 	public void drawSelectedBox() {
 		parent.pushStyle();
 		parent.noStroke();
@@ -124,16 +143,23 @@ public class ViewCompare implements SubView{
 		}
 		parent.popStyle();
 	}
-	
+
 	public void drawButtons() {
 		if (buttonList == null) {
 			initButtons();
 		}
-		for (int i = 0; i < buttonList.length; i++) {
-			buttonList[i].draw();
+		if (this.mainImage == null) {
+			for (int i = 0; i < endButtonList.length; i++) {
+				endButtonList[i].draw();
+			}
+		}
+		else {
+			for (int i = 0; i < buttonList.length; i++) {
+				buttonList[i].draw();
+			}
 		}
 	}
-	
+
 	/*
 	 * ----------------------
 	 * 
@@ -141,10 +167,10 @@ public class ViewCompare implements SubView{
 	 * 
 	 * ----------------------
 	 */
-	
+
 	public void nextImage() {
 		this.selectedImage = null;
-		
+
 		if (mainImage != null) {
 			mainImage.done();
 		}
@@ -154,17 +180,17 @@ public class ViewCompare implements SubView{
 					compareImages[i].done();
 			}
 		}
-		
+
 		controller.nextCompareSet();
-		
+
 		String mainImagePath = controller.getMainCompareImagePath();
 		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages);
-		
+
 		System.out.println("Set mainImagePath to " + mainImagePath);
-		
+
 		if (mainImagePath == null) {
 			System.out.println("REACHED END");
-			
+
 			mainImage = null;
 			this.selectedImage = null;
 			this.compareImages = new ClickableImage[6];
@@ -173,30 +199,30 @@ public class ViewCompare implements SubView{
 		}
 		mainImage = new ClickableImage(parent, mainImagePath, 0, 0, (int)(parent.width/(2.5)), parent.height, true);
 		mainImage.setClickable(false);
-		
+
 		compareImages = new ClickableImage[ViewCompare.numCompareImages];
-		
+
 		int imgWidth =  getSmallImageWidth();
 		int imgHeight = getSmallImageHeight();
-		
+
 		int row, col, newX, newY;
-		
+
 		for (int i = 0; i < ViewCompare.numCompareImages; i++) {
 			if (compareImagePaths[i] == null) {
 				return;
 			}
 			row = i / (ViewCompare.numCompareImages/ViewCompare.numRows);
 			col = i % (ViewCompare.numCompareImages/ViewCompare.numRows);
-			
+
 			newX = mainImage.x + mainImage.width + col * (imgWidth + padding) + padding;
 			newY = row * (imgHeight + padding) + padding;
 			compareImages[i] = new ClickableImage(parent, compareImagePaths[i], newX, newY, imgWidth, imgHeight, false);
 		}
-		
-		
+
+
 		System.gc();
 	}
-	
+
 	public void selectImage(int imageID) {
 		if (selectedImage != null) {
 			System.out.println("selected: " + this.selectedImage.intValue() + " selecting " + imageID);
@@ -208,8 +234,8 @@ public class ViewCompare implements SubView{
 			this.selectedImage = new Integer(imageID);
 		}
 	}
-	
-	
+
+
 	/*
 	 * ----------------------
 	 * 
@@ -217,7 +243,7 @@ public class ViewCompare implements SubView{
 	 * 
 	 * ----------------------
 	 */
-	
+
 	public void mousePressed() {
 		for (int i = 0; i < compareImages.length; i++) {
 			if (compareImages[i] != null && compareImages[i].clicked()) {
@@ -226,11 +252,12 @@ public class ViewCompare implements SubView{
 		}
 		clickButtons();
 	}
-	
-	
+
+
 	public void clickButtons() {
+
 		for (int i = 0; i < buttonList.length; i++) {
-			if (buttonList[i] != null && buttonList[i].clicked()) {
+			if ((this.mainImage == null && endButtonList[i] != null && endButtonList[i].clicked()) || (buttonList[i] != null && buttonList[i].clicked())) {
 				switch(i) {
 				case 0:
 					// "End Session" -- switch to ViewReview
@@ -243,7 +270,7 @@ public class ViewCompare implements SubView{
 			}
 		}
 	}
-	
+
 	@Override
 	public void keyPressed(int key) {
 		if (selectedImage != null && selectedImage < compareImages.length && (key == PApplet.RETURN || key == PApplet.ENTER)) {
@@ -259,8 +286,8 @@ public class ViewCompare implements SubView{
 			parent.exit();
 		}
 	}
-	
-	
+
+
 	/*
 	 * ----------------------
 	 * 
@@ -268,11 +295,11 @@ public class ViewCompare implements SubView{
 	 * 
 	 * ----------------------
 	 */
-	
+
 	public int switchViews() {
 		return this.switchViews;
 	}
-	
+
 	public int getSmallImageWidth() {
 		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
 	}
@@ -283,7 +310,7 @@ public class ViewCompare implements SubView{
 	public void setController(ICController controller) {
 		this.controller = controller;
 	}
-	
+
 	public int[] getImageBoxInfo(int imageID) {
 		ClickableImage img = this.compareImages[imageID];
 		if (img == null) {
@@ -291,7 +318,7 @@ public class ViewCompare implements SubView{
 		}
 		return new int[] {img.x, img.y, img.width, img.height};
 	}
-	
+
 }
 
 

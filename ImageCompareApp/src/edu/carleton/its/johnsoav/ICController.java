@@ -85,12 +85,18 @@ public class ICController {
 			if (this.selectedCompares[i] == null) {
 				break;
 			}
-			matchedAL.add(new String[] {this.selectedCompares[i], this.tifImages.get(i)});
+			if(this.approved == null) {
+				matchedAL.add(new String[] {this.selectedCompares[i], this.tifImages.get(i)});
+			} else {
+				matchedAL.add(new String[] {this.approved[i][0], this.approved[i][1]});
+			}
 		}
-		
-		matched = new String[matchedAL.size()][2];
-		matchedAL.toArray(matched);
-		model.saveSession(matched);
+		String[][] a = new String[matchedAL.size()][2];
+		matchedAL.toArray(a);
+		if (this.approved == null) {
+			this.matched = a;
+		}
+		model.saveSession(a);
 	}
 
 	public void nextCompareSet() {
