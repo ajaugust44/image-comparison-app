@@ -140,6 +140,7 @@ public class ICController {
 	}
 	
 	public String[] getCompareImagePaths(int numPaths) {
+		System.out.println("called getCompareImagePaths with k "+ numPaths );
 		if (jpgImages == null) {
 			this.initImages();
 		}

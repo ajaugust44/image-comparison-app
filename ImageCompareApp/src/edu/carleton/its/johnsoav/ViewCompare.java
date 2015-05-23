@@ -191,6 +191,7 @@ public class ViewCompare implements SubView{
 	public void nextImage() {
 		this.loading = true;
 		this.selectedImage = null;
+		this.currCompareImages = 1;
 
 		if (mainImage != null) {
 			mainImage.done();
@@ -238,6 +239,47 @@ public class ViewCompare implements SubView{
 			newX = mainImage.x + mainImage.width + col * (imgWidth + padding) + padding;
 			newY = row * (imgHeight + padding) + padding;
 			compareImages[i] = new ClickableImage(parent, compareImagePaths[i], newX, newY, imgWidth, imgHeight, false);
+		}
+
+
+		System.gc();
+		this.loading = false;
+	}
+	
+	public void nextCompares() {
+		this.loading = true;
+		this.selectedImage = null;
+
+		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages * this.currCompareImages);
+		
+		System.out.println("length of paths " + compareImagePaths.length + " vs requested " + ViewCompare.numCompareImages * this.currCompareImages);
+		if (compareImagePaths[0] == null) {
+			this.selectedImage = null;
+			this.compareImages = new ClickableImage[ViewCompare.numCompareImages];
+			System.gc();
+			this.loading = false;
+			return;
+		}
+		compareImages = new ClickableImage[ViewCompare.numCompareImages];
+
+		int imgWidth =  getSmallImageWidth();
+		int imgHeight = getSmallImageHeight();
+
+		int row, col, newX, newY;
+		int pathIndex = ViewCompare.numCompareImages * (this.currCompareImages - 1);
+		for (int i = 0; i < ViewCompare.numCompareImages; i++) {
+			System.out.println("pathIndex, i, p+i: " + pathIndex + ", " + i + ", "+ pathIndex + i);
+			if (compareImagePaths.length <= pathIndex + i) {
+				loading = false;
+				return;
+			}
+			row = i / (ViewCompare.numCompareImages/ViewCompare.numRows);
+			col = i % (ViewCompare.numCompareImages/ViewCompare.numRows);
+
+			newX = mainImage.x + mainImage.width + col * (imgWidth + padding) + padding;
+			newY = row * (imgHeight + padding) + padding;
+			compareImages[i] = new ClickableImage(parent, compareImagePaths[pathIndex + i],
+					newX, newY, imgWidth, imgHeight, false);
 		}
 
 
@@ -316,8 +358,16 @@ public class ViewCompare implements SubView{
 			}
 			break;
 		case KeyEvent.VK_LEFT:
+			if (this.currCompareImages > 1) {
+				this.currCompareImages -= 1;
+				this.nextCompares();
+			}
 			break;
 		case KeyEvent.VK_RIGHT:
+			if (this.compareImages[ViewCompare.numCompareImages-1] != null) {
+				this.currCompareImages += 1;
+				this.nextCompares();
+			}
 			break;
 		case KeyEvent.VK_0:
 		case KeyEvent.VK_1:

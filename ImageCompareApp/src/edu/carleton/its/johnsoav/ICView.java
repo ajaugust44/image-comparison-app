@@ -92,6 +92,10 @@ public class ICView extends PApplet{
 		this.controller = c;
 	}
 
+	/**
+	 * This function uses Processing's built in threading ability to run any
+	 * loading a SubView requires separately from the animation thread.
+	 */
 	public void callThread() {
 		this.views[currView].threadFunction();
 	}
