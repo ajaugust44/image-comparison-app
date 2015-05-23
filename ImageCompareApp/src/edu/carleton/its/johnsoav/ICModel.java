@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * The model interacts solely with the controller, providing information from
  * the file system about images.
  * 
- * TODO: This is where the controller should get information about an image's
+ * TODO: This is where the controller gets information about an image's
  * nearest neighbors
  * 
  * @author Avery Johnson

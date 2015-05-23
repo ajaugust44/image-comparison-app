@@ -12,4 +12,6 @@ public interface SubView {
 	public void keyPressed(int key);
 	
 	public int switchViews();
+	public boolean isLoading();
+	public void threadFunction();
 }

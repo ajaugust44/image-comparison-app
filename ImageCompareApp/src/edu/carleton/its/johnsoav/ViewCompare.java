@@ -3,7 +3,6 @@ package edu.carleton.its.johnsoav;
 import java.awt.event.KeyEvent;
 
 import processing.core.PApplet;
-import processing.core.PImage;
 
 /**
  * This view is designed so that a user can compare a single large
@@ -59,6 +58,8 @@ public class ViewCompare implements SubView{
 
 	int switchViews;
 
+	boolean loading;
+	
 	/*
 	 * ----------------------
 	 * 
@@ -73,20 +74,24 @@ public class ViewCompare implements SubView{
 	}
 
 	public void setup() {
-		nextImage();
+		parent.thread("callThread");
+//		nextImage();
 	}
 
 	public void initButtons() {
 		int[][] buttonInfo = {
-				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
+				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight},
+				{parent.width - buttonHeight - 10, parent.height / 2 + 10, 50, buttonHeight}
 		};
 
 		int[][] endButtonInfo = {
-				{parent.width/2 - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight}
+				{parent.width/2 - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight},
+				{parent.width/2 - buttonHeight + 50, parent.height / 2 - buttonHeight, 50, buttonHeight}
 		};
 
 		String[] buttonNames = {
-				"Save and\nReview"
+				"Save and\nReview",
+				"Next"
 		};
 		this.buttonList = new Button[buttonNames.length];
 		this.endButtonList = new Button[buttonNames.length];
@@ -94,9 +99,9 @@ public class ViewCompare implements SubView{
 			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
 					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
 					buttonNames[i]);
-			this.endButtonList[i] = new Button(this.parent, endButtonInfo[i][0],
-					endButtonInfo[i][1], endButtonInfo[i][2], endButtonInfo[i][3],
-					buttonNames[i]);
+				this.endButtonList[i] = new Button(this.parent, endButtonInfo[i][0],
+						endButtonInfo[i][1], endButtonInfo[i][2], endButtonInfo[i][3],
+						buttonNames[i]);
 		}
 	}
 
@@ -109,16 +114,20 @@ public class ViewCompare implements SubView{
 	 */
 
 	public void draw() {
-
 		this.drawSelectedBox();
 		this.drawImages();
 		this.drawButtons();
-
 	}
 
 	public void drawImages() {
+		if (this.loading) {
+			return;
+		}
 		if (mainImage != null) 
 			mainImage.drawImage();
+		if (compareImages == null) {
+			return;
+		}
 		for (int i = 0; i < compareImages.length; i ++) {
 			if (compareImages[i] != null)
 				compareImages[i].drawImage();
@@ -126,6 +135,13 @@ public class ViewCompare implements SubView{
 	}
 
 	public void drawSelectedBox() {
+		if (this.loading) {
+			return;
+		}
+		if (this.compareImages == null) {
+			return;
+		}
+
 		parent.pushStyle();
 		parent.noStroke();
 		for (int i = 0; i < ViewCompare.numCompareImages; i ++) {
@@ -145,20 +161,24 @@ public class ViewCompare implements SubView{
 	}
 
 	public void drawButtons() {
+		if (this.loading) {
+			return;
+		}
 		if (buttonList == null) {
 			initButtons();
 		}
 		if (this.mainImage == null) {
-			for (int i = 0; i < endButtonList.length; i++) {
+			for (int i = 0; i < endButtonList.length - 1; i++) {
 				endButtonList[i].draw();
 			}
 		}
-		else {
+		else{
 			for (int i = 0; i < buttonList.length; i++) {
 				buttonList[i].draw();
 			}
 		}
 	}
+
 
 	/*
 	 * ----------------------
@@ -169,6 +189,7 @@ public class ViewCompare implements SubView{
 	 */
 
 	public void nextImage() {
+		this.loading = true;
 		this.selectedImage = null;
 
 		if (mainImage != null) {
@@ -180,7 +201,6 @@ public class ViewCompare implements SubView{
 					compareImages[i].done();
 			}
 		}
-
 		controller.nextCompareSet();
 
 		String mainImagePath = controller.getMainCompareImagePath();
@@ -195,6 +215,7 @@ public class ViewCompare implements SubView{
 			this.selectedImage = null;
 			this.compareImages = new ClickableImage[6];
 			System.gc();
+			this.loading = false;
 			return;
 		}
 		mainImage = new ClickableImage(parent, mainImagePath, 0, 0, (int)(parent.width/(2.5)), parent.height, true);
@@ -221,6 +242,7 @@ public class ViewCompare implements SubView{
 
 
 		System.gc();
+		this.loading = false;
 	}
 
 	public void selectImage(int imageID) {
@@ -255,7 +277,6 @@ public class ViewCompare implements SubView{
 
 
 	public void clickButtons() {
-
 		for (int i = 0; i < buttonList.length; i++) {
 			if ((this.mainImage == null && endButtonList[i] != null && endButtonList[i].clicked()) || (buttonList[i] != null && buttonList[i].clicked())) {
 				switch(i) {
@@ -263,6 +284,17 @@ public class ViewCompare implements SubView{
 					// "End Session" -- switch to ViewReview
 					controller.save();
 					this.switchViews = ICView.VIEW_REVIEW_ID;
+					break;
+				case 1:
+					// next image: only for non-end -- next mainImage
+					if (this.mainImage != null) {
+						if (selectedImage != null && selectedImage < compareImages.length){
+							this.controller.setSelected(this.compareImages[this.selectedImage].path);
+							this.parent.background(ICView.backgroundColor);
+//							nextImage();
+							parent.thread("callThread");
+						}
+					}
 					break;
 				default:
 					break;
@@ -273,15 +305,33 @@ public class ViewCompare implements SubView{
 
 	@Override
 	public void keyPressed(int key) {
-		if (selectedImage != null && selectedImage < compareImages.length && (key == PApplet.RETURN || key == PApplet.ENTER)) {
-			this.controller.setSelected(this.compareImages[this.selectedImage].path);
-			this.parent.background(ICView.backgroundColor);
-			nextImage();
-		} else if( key > KeyEvent.VK_0 && key <= KeyEvent.VK_6) {
+		switch(key) {
+		case PApplet.RETURN:
+		case PApplet.ENTER:
+			if (selectedImage != null && selectedImage < compareImages.length){
+				this.controller.setSelected(this.compareImages[this.selectedImage].path);
+				this.parent.background(ICView.backgroundColor);
+//				nextImage();
+				parent.thread("callThread");
+			}
+			break;
+		case KeyEvent.VK_LEFT:
+			break;
+		case KeyEvent.VK_RIGHT:
+			break;
+		case KeyEvent.VK_0:
+		case KeyEvent.VK_1:
+		case KeyEvent.VK_2:
+		case KeyEvent.VK_3:
+		case KeyEvent.VK_4:
+		case KeyEvent.VK_5:
+		case KeyEvent.VK_6:
 			selectImage((key - 1) - KeyEvent.VK_0);
-		} else if ( key == KeyEvent.VK_S) {
+			break;
+		case KeyEvent.VK_S:
 			controller.save();
-		} else if ( key == PApplet.ESC)  {
+			break;
+		case PApplet.ESC:
 			controller.save();
 			parent.exit();
 		}
@@ -319,6 +369,14 @@ public class ViewCompare implements SubView{
 		return new int[] {img.x, img.y, img.width, img.height};
 	}
 
+	public boolean isLoading() {
+		return this.loading;
+	}
+
+	public void threadFunction() {
+		this.nextImage();
+	}
+	
 }
 
 

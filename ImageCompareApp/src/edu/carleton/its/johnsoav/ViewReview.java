@@ -43,6 +43,7 @@ public class ViewReview implements SubView {
 	Button[] buttonList;
 	
 	int switchViews;
+	boolean loading;
 	
 	/*
 	 * ----------------------
@@ -60,7 +61,7 @@ public class ViewReview implements SubView {
 	
 	@Override
 	public void setup() {
-		nextImage();
+		parent.thread("callThread");
 	}
 
 	/*
@@ -79,6 +80,9 @@ public class ViewReview implements SubView {
 	}
 
 	private void drawImages() {
+		if (this.loading) {
+			return;
+		}
 		if (mainImage != null) {
 			mainImage.drawImage();
 		}
@@ -88,8 +92,6 @@ public class ViewReview implements SubView {
 	}
 	
 	private void drawButtons() {
-		// maybeDo draw buttons as you write buttons
-		System.out.print("");
 	}
 
 	
@@ -102,6 +104,7 @@ public class ViewReview implements SubView {
 	 */
 	
 	private void nextImage() {
+		this.loading = true;
 		parent.background(ICView.backgroundColor);
 		
 		approved = null;
@@ -114,6 +117,7 @@ public class ViewReview implements SubView {
 		if (paths == null) {
 			this.mainImage = null;
 			this.compareImage = null;
+			this.loading = false;
 			return;
 		}
 		
@@ -122,7 +126,7 @@ public class ViewReview implements SubView {
 		
 		compareImage = new ClickableImage(parent, paths[1], (int)(parent.width/(2)) + 10, 0, (int)(parent.width/(2)) - 5, parent.height, true);
 		compareImage.setClickable(false);
-		
+		this.loading = false;
 	}
 	
 	
@@ -151,7 +155,7 @@ public class ViewReview implements SubView {
 		if ((this.mainImage != null && this.compareImage != null) && (key == PApplet.RETURN || key == PApplet.ENTER)) {
 			this.controller.approve();
 			this.parent.background(ICView.backgroundColor);
-			nextImage();
+			parent.thread("callThread");
 		} else if ( key == KeyEvent.VK_S) {
 			controller.save();
 		} else if ( key == PApplet.ESC)  {
@@ -174,10 +178,17 @@ public class ViewReview implements SubView {
 		this.controller = controller;
 	}
 
-
+	public boolean isLoading() {
+		return this.loading;
+	}
 
 	public int switchViews() {
 		return this.switchViews;
+	}
+	
+	public void threadFunction() {
+		this.nextImage();
+		return;
 	}
 	
 }

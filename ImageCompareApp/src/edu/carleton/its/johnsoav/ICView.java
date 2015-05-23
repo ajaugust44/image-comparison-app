@@ -1,6 +1,7 @@
 package edu.carleton.its.johnsoav;
 
 import processing.core.*;
+import gifAnimation.*;
 
 
 /** 
@@ -28,7 +29,7 @@ public class ICView extends PApplet{
 	ICController controller;
 	
 	SubView[] views;
-	
+	Gif loadingImg;
 	
 	public void setup() {
 		size(min(WIDTH, displayWidth), min(displayHeight - 100, HEIGHT));
@@ -38,14 +39,23 @@ public class ICView extends PApplet{
 		
 		views[currView].setup();
 		
+		loadingImg = new Gif(this, "../res/loading.gif");
+		loadingImg.ignoreRepeat();
+		loadingImg.loop();
+		
 	}
 	
 	public void draw() {
 		if (currView != views[currView].switchViews()) {
 			currView = views[currView].switchViews();
 			views[currView].setup();
+		} 
+		if (views[currView].isLoading()) {
+			this.drawLoading();
+		} else {
+			background(ICView.backgroundColor);
+			views[currView].draw();
 		}
-		views[currView].draw();
 	}
 	
 	public void initViews() {
@@ -59,12 +69,22 @@ public class ICView extends PApplet{
 		views[1].setController(this.controller);
 	}
 	
+	public void drawLoading() {
+		int gifHeight = 200, gifWidth = 400;
+		image(this.loadingImg, this.width/2 - (gifWidth/2), this.height/2 - (gifHeight/2), gifWidth, gifHeight);
+	}
 	
 	public void mousePressed() {
+		if (views[currView].isLoading()) {
+			return;
+		}
 		views[currView].mousePressed();
 	}
 
 	public void keyPressed() {
+		if (views[currView].isLoading()) {
+			return;
+		}
 		views[currView].keyPressed(keyCode);
 	}
 	
@@ -72,6 +92,11 @@ public class ICView extends PApplet{
 		this.controller = c;
 	}
 
+	public void callThread() {
+		this.views[currView].threadFunction();
+	}
+	
+	
 	public static void main(String[] args) {
 	}
 
