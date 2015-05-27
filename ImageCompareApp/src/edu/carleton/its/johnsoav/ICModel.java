@@ -29,7 +29,7 @@ public class ICModel {
 	
 	public static final String IMAGE_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/";
 	public static final String JPEG_FOLDER = "jpgTestSet/";
-	public static final String TIFF_FOLDER = "tiffTestSet/";
+	public static final String TIFF_FOLDER = "tiffSmallTest/";
 	public static final String OUTPUT_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/output/";
 	
 	/*

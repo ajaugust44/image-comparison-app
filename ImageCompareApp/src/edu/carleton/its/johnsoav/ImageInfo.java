@@ -196,8 +196,6 @@ public class ImageInfo {
 		}
 		
 		highlightTextBox(img);
-		int[] rgba = this.getRGBAFromPixel(img.getRGB(0, 0));
-//		System.out.println(rgba[0] + " " + rgba[1] + " " + rgba[2] );
 		try {
 			ImageIO.write(img, "jpg", new File(
 					"/Users/ajaugust44/work2/esternayFileCompare/output/" + this.imageName + "Duplicate.jpg"));

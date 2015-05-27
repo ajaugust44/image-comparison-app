@@ -161,6 +161,10 @@ public class ViewReview implements SubView {
 		} else if ( key == PApplet.ESC)  {
 			controller.save();
 			parent.exit();
+		} else if ( key == KeyEvent.VK_SPACE) {
+			this.approved = false;
+			this.parent.background(ICView.backgroundColor);
+			parent.thread("callThread");
 		}
 	}
 	

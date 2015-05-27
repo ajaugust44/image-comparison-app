@@ -1,7 +1,5 @@
 package edu.carleton.its.johnsoav;
 
-import java.awt.Color;
-
 import processing.core.PApplet;
 
 
