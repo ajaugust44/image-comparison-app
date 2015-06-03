@@ -117,8 +117,6 @@ public class ImageInfo {
 			}
 		}
 		
-		writeToFile(levelProbs);
-		
 		float total = 0;
 		for (int i = 0; i < levelProbs.length; i ++) {
 			total += levelProbs[i];

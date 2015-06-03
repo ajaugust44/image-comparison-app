@@ -10,6 +10,8 @@ import processing.core.PApplet;
  */
 public class Button {
 	
+	public static final int buttonHeight = 50;
+	
 	public final int[] color = {100, 120, 200};
 	public final int[] lineColor = {44, 44, 66};
 	

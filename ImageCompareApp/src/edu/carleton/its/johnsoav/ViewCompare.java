@@ -37,7 +37,6 @@ public class ViewCompare implements SubView{
 
 	public static final int numRows = 2;
 	public static final int numCompareImages = 6;
-	public final int buttonHeight = 50;
 
 	private final int padding = 10;
 
@@ -59,7 +58,7 @@ public class ViewCompare implements SubView{
 	int switchViews;
 
 	boolean loading;
-	
+
 	/*
 	 * ----------------------
 	 * 
@@ -75,33 +74,44 @@ public class ViewCompare implements SubView{
 
 	public void setup() {
 		parent.thread("callThread");
-//		nextImage();
+		//		nextImage();
 	}
 
 	public void initButtons() {
+		int buttonHeight = Button.buttonHeight;
 		int[][] buttonInfo = {
+				//Save + Review
 				{parent.width - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight},
-				{parent.width - buttonHeight - 10, parent.height / 2 + 10, 50, buttonHeight}
+				// Next
+				{parent.width - buttonHeight - 10, parent.height / 2 + 10, 70, buttonHeight},
+				// Save
+				{parent.width - buttonHeight - 10, parent.height / 2 + buttonHeight + 20, 70, buttonHeight },
 		};
 
 		int[][] endButtonInfo = {
 				{parent.width/2 - buttonHeight - 10, parent.height / 2 - buttonHeight, 50, buttonHeight},
-				{parent.width/2 - buttonHeight + 50, parent.height / 2 - buttonHeight, 50, buttonHeight}
 		};
 
 		String[] buttonNames = {
 				"Save and\nReview",
-				"Next"
+				"Next",
+				"Save"
+		};
+
+		String[] endButtonNames = {
+				"Save and \nReview",
 		};
 		this.buttonList = new Button[buttonNames.length];
-		this.endButtonList = new Button[buttonNames.length];
+		this.endButtonList = new Button[endButtonNames.length];
 		for (int i = 0; i < buttonNames.length; i++) {
 			this.buttonList[i] = new Button(this.parent, buttonInfo[i][0],
 					buttonInfo[i][1], buttonInfo[i][2], buttonInfo[i][3],
 					buttonNames[i]);
-				this.endButtonList[i] = new Button(this.parent, endButtonInfo[i][0],
-						endButtonInfo[i][1], endButtonInfo[i][2], endButtonInfo[i][3],
-						buttonNames[i]);
+		}
+		for (int i = 0; i < endButtonNames.length; i ++) {
+			this.endButtonList[i] = new Button(this.parent, endButtonInfo[i][0],
+					endButtonInfo[i][1], endButtonInfo[i][2], endButtonInfo[i][3],
+					endButtonNames[i]);
 		}
 	}
 
@@ -168,7 +178,10 @@ public class ViewCompare implements SubView{
 			initButtons();
 		}
 		if (this.mainImage == null) {
-			for (int i = 0; i < endButtonList.length - 1; i++) {
+			for (int i = 0; i < endButtonList.length; i++) {
+				if (i == 1) {
+					continue;
+				}
 				endButtonList[i].draw();
 			}
 		}
@@ -245,13 +258,13 @@ public class ViewCompare implements SubView{
 		System.gc();
 		this.loading = false;
 	}
-	
+
 	public void nextCompares() {
 		this.loading = true;
 		this.selectedImage = null;
 
 		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages * this.currCompareImages);
-		
+
 		System.out.println("length of paths " + compareImagePaths.length + " vs requested " + ViewCompare.numCompareImages * this.currCompareImages);
 		if (compareImagePaths[0] == null) {
 			this.selectedImage = null;
@@ -319,30 +332,49 @@ public class ViewCompare implements SubView{
 
 
 	public void clickButtons() {
-		for (int i = 0; i < buttonList.length; i++) {
-			if ((this.mainImage == null && endButtonList[i] != null && endButtonList[i].clicked()) || (buttonList[i] != null && buttonList[i].clicked())) {
-				switch(i) {
-				case 0:
-					// "End Session" -- switch to ViewReview
-					controller.save();
-					this.switchViews = ICView.VIEW_REVIEW_ID;
-					break;
-				case 1:
-					// next image: only for non-end -- next mainImage
-					if (this.mainImage != null) {
-						if (selectedImage != null && selectedImage < compareImages.length){
-							this.controller.setSelected(this.compareImages[this.selectedImage].path);
-							this.parent.background(ICView.backgroundColor);
-//							nextImage();
-							parent.thread("callThread");
+		if (this.mainImage != null) {
+			for (int i = 0; i < buttonList.length; i++) {
+				if (buttonList[i].clicked()) {
+					switch(i) {
+					case 0:
+						// "End Session" -- switch to ViewReview
+						controller.save();
+						this.switchViews = ICView.VIEW_REVIEW_ID;
+						break;
+					case 1:
+						// next image: only for non-end -- next mainImage
+						if (this.mainImage != null) {
+							if (selectedImage != null && selectedImage < compareImages.length){
+								this.controller.setSelected(this.compareImages[this.selectedImage].path);
+								this.parent.background(ICView.backgroundColor);
+								parent.thread("callThread");
+							}
 						}
+						break;
+					case 2:
+						//Save
+						controller.save();
+						break;
+					default:
+						break;
 					}
-					break;
-				default:
-					break;
+				}
+			}
+		} else {
+			for (int i = 0; i < endButtonList.length; i ++) {
+				if (endButtonList[i].clicked()) {
+					switch(i) {
+					case 0:
+						// Save and Review
+						controller.save();
+						this.switchViews = ICView.VIEW_REVIEW_ID;
+						break;
+					}
 				}
 			}
 		}
+		
+		
 	}
 
 	@Override
@@ -353,8 +385,10 @@ public class ViewCompare implements SubView{
 			if (selectedImage != null && selectedImage < compareImages.length){
 				this.controller.setSelected(this.compareImages[this.selectedImage].path);
 				this.parent.background(ICView.backgroundColor);
-//				nextImage();
 				parent.thread("callThread");
+			} else if (this.mainImage == null){
+				controller.save();
+				this.switchViews = ICView.VIEW_REVIEW_ID;
 			}
 			break;
 		case KeyEvent.VK_LEFT:
@@ -401,7 +435,7 @@ public class ViewCompare implements SubView{
 	}
 
 	public int getSmallImageWidth() {
-		return ((parent.width - buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
+		return ((parent.width - Button.buttonHeight - padding) - (mainImage.x + mainImage.width) - (5 * padding))/3;
 	}
 	public int getSmallImageHeight() {
 		return ((parent.height) - (padding * 3)) / 2;
@@ -426,7 +460,7 @@ public class ViewCompare implements SubView{
 	public void threadFunction() {
 		this.nextImage();
 	}
-	
+
 }
 
 
