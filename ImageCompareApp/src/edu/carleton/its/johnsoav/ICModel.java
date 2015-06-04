@@ -5,6 +5,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Calendar;
 
 
 /**
@@ -49,6 +53,8 @@ public class ICModel {
 	ImageCompare neighborGenerator;
 	int mainImageID;
 	
+	int sessionID;
+	
 	/*
 	 * ----------------------
 	 * 
@@ -56,6 +62,11 @@ public class ICModel {
 	 * 
 	 * ----------------------
 	 */
+	
+	public ICModel() {
+		this.sessionID = -1;
+	}
+	
 	public ArrayList<String> getJPGImages() {
 		if(jpgSet == null) {
 			jpgSet = getAllImagesInFolder(new File(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
@@ -77,6 +88,18 @@ public class ICModel {
 				ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER));
 		jpgSet = this.getAllImagesInFolder(new File(
 				ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
+	}
+	
+	public void initSessionNumber() {
+		ArrayList<String> sessionNames = this.getAllImagesInFolder(
+				new File(ICModel.OUTPUT_PATH));
+		int largest = 0;
+		int curr = -1;
+		for (int i = 0; i < sessionNames.size(); i++) {
+			curr = this.getSessionNumberFromPath(sessionNames.get(i));
+			largest = Math.max(curr, largest);
+		}
+		this.sessionID = largest + 1;
 	}
 	
 	
@@ -191,10 +214,10 @@ public class ICModel {
 		// in format:
 		// decimalAccuracy (if known)	size of tifSet	size of jpgSet
 		// tifName1	neighbor1	neighbor2	etc.
-		String outputString = "tif name\tjpg name\n";
-		
+		String outputString = "timeStamp\ttif name\tjpg name\n";
+		String timeStamp = getTimeStamp();
 		for (int i = 0; i < this.matchedImages.length; i++) {
-			outputString += this.matchedImages[i][0] + "\t" + this.matchedImages[i][1];
+			outputString += timeStamp + "\t" + this.matchedImages[i][0] + "\t" + this.matchedImages[i][1];
 			if (this.approved != null) {
 				outputString += (approved[i]) ? "approved" : "condemned";
 			}
@@ -246,12 +269,27 @@ public class ICModel {
 	}
 	
 	private int getSessionNumber() {
-		//TODO:
-		return 0;
+		if (this.sessionID < 0) {
+			initSessionNumber();
+		}
+		return this.sessionID;
 	}
 	
 	public void setController(ICController controller) {
 		this.controller = controller;
 	}
+	
+	public int getSessionNumberFromPath(String path) {
+		Pattern p = Pattern.compile("([0-9]+).txt");
+		Matcher m = p.matcher(path);
+		m.find();
+		String num = m.group(1);		
+		return Integer.parseInt(num);
+	}
+
+	public String getTimeStamp()  {
+		return (new Date()).toString();
+	}
+	
 	
 }
