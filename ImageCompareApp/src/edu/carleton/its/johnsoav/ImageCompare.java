@@ -85,13 +85,11 @@ public class ImageCompare {
 	 * @param k
 	 */
 	public void getKNN(int k) {
-		System.out.println("entering getKNN with k " + k );
 		DistanceQueue neighbors = new DistanceQueue(k);
 		for (int i = 0; i < this.compareImages.length; i ++) {
 			DistanceNode node = new DistanceNode(i, this.standardizedMain[this.mainImageID], this.standardizedCompare[i]);
 			neighbors.offer(node);
 		}
-		System.out.println("After finding all NN, have distanceQueue of size " + neighbors.size());
 		
 		this.nearestNeighbors = new int[neighbors.size()];
 		for (int i = neighbors.size() - 1; i >= 0; i --) {
@@ -99,7 +97,6 @@ public class ImageCompare {
 			nearestNeighbors[i] = n.getID();
 		}
 		
-		System.out.println("set nearestNeighbors to be size " + nearestNeighbors.length);
 	}
 	
 	

@@ -220,8 +220,6 @@ public class ViewCompare implements SubView{
 		String mainImagePath = controller.getMainCompareImagePath();
 		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages);
 
-		System.out.println("Set mainImagePath to " + mainImagePath);
-
 		if (mainImagePath == null) {
 			System.out.println("REACHED END");
 
@@ -265,7 +263,6 @@ public class ViewCompare implements SubView{
 
 		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages * this.currCompareImages);
 
-		System.out.println("length of paths " + compareImagePaths.length + " vs requested " + ViewCompare.numCompareImages * this.currCompareImages);
 		if (compareImagePaths[0] == null) {
 			this.selectedImage = null;
 			this.compareImages = new ClickableImage[ViewCompare.numCompareImages];
@@ -281,7 +278,6 @@ public class ViewCompare implements SubView{
 		int row, col, newX, newY;
 		int pathIndex = ViewCompare.numCompareImages * (this.currCompareImages - 1);
 		for (int i = 0; i < ViewCompare.numCompareImages; i++) {
-			System.out.println("pathIndex, i, p+i: " + pathIndex + ", " + i + ", "+ pathIndex + i);
 			if (compareImagePaths.length <= pathIndex + i) {
 				loading = false;
 				return;
@@ -301,11 +297,7 @@ public class ViewCompare implements SubView{
 	}
 
 	public void selectImage(int imageID) {
-		if (selectedImage != null) {
-			System.out.println("selected: " + this.selectedImage.intValue() + " selecting " + imageID);
-		}
 		if (this.selectedImage != null && this.selectedImage.intValue() == imageID){
-			System.out.println("Setting to null");
 			this.selectedImage = null;
 		} else {
 			this.selectedImage = new Integer(imageID);
@@ -338,6 +330,10 @@ public class ViewCompare implements SubView{
 					switch(i) {
 					case 0:
 						// "End Session" -- switch to ViewReview
+						if (selectedImage != null && selectedImage < compareImages.length){
+							this.controller.setSelected(this.compareImages[this.selectedImage].path);
+						}
+						
 						controller.save();
 						this.switchViews = ICView.VIEW_REVIEW_ID;
 						break;

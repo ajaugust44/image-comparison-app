@@ -97,7 +97,6 @@ public class ClickableImage {
 			System.err.println("error opening file " + fileName );
 			return null;
 		}
-		System.out.println("file: " + fileName);
 		try {
 			bImg = ImageIO.read(f);
 			return resize(bImg, maxW, maxH, quality);

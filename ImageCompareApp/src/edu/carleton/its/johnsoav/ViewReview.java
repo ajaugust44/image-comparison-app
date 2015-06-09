@@ -233,7 +233,7 @@ public class ViewReview implements SubView {
 				if (endButtonList[i].clicked()) {
 					switch(i) {
 					case 0: // save and quit
-						controller.save();
+						controller.quit();
 						parent.exit();
 					}
 				}
@@ -251,7 +251,7 @@ public class ViewReview implements SubView {
 		} else if ( key == KeyEvent.VK_S) {
 			controller.save();
 		} else if ( key == PApplet.ESC)  {
-			controller.save();
+			controller.quit();
 			parent.exit();
 		} else if ( key == KeyEvent.VK_SPACE) {
 			this.approved = false;

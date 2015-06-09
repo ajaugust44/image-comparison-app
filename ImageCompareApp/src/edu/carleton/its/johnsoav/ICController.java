@@ -68,6 +68,7 @@ public class ICController {
 		this.selectedCompares[model.getMainImageID()] = selectedPath;
 	}
 	
+	
 	/*
 	 * ----------------------
 	 * 
@@ -81,6 +82,9 @@ public class ICController {
 			return;
 		}
 		ArrayList<String[]> matchedAL = new ArrayList<String[]>(model.mainImageID);
+		if (this.approved != null) {
+			model.approved = new boolean[matchedAL.size()];
+		}
 		for (int i = 0; i < this.selectedCompares.length; i ++) {
 			if (this.selectedCompares[i] == null) {
 				break;
@@ -88,7 +92,11 @@ public class ICController {
 			if(this.approved == null) {
 				matchedAL.add(new String[] {this.selectedCompares[i], this.tifImages.get(i)});
 			} else {
-				matchedAL.add(new String[] {this.approved[i][0], this.approved[i][1]});
+				if (this.approved[i][0] != null) {
+					matchedAL.add(new String[] {this.approved[i][0], this.approved[i][1]});
+					model.approved[i] = true;
+				}
+				
 			}
 		}
 		String[][] a = new String[matchedAL.size()][2];
@@ -99,6 +107,33 @@ public class ICController {
 		model.saveSession(a);
 	}
 
+	public void quit() {
+		if (model.getMainImageID() < 0) {
+			return;
+		}
+		ArrayList<String[]> matchedAL = new ArrayList<String[]>(model.mainImageID);
+		for (int i = 0; i < this.selectedCompares.length; i ++) {
+			if (this.selectedCompares[i] == null) {
+				break;
+			}
+			if(this.approved == null) {
+				matchedAL.add(new String[] {this.selectedCompares[i], this.tifImages.get(i)});
+			} else {
+				if (this.approved[i][0] != null) {
+					matchedAL.add(new String[] {this.approved[i][0], this.approved[i][1]});
+				}
+			}
+		}
+		String[][] a = new String[matchedAL.size()][2];
+		matchedAL.toArray(a);
+		if (this.approved == null) {
+			this.matched = a;
+		}
+		model.completeSession(a);
+		
+	}
+	
+	
 	public void nextCompareSet() {
 		model.nextMainImage();
 	}
@@ -113,6 +148,7 @@ public class ICController {
 
 	public void approve() {
 		if (this.approved == null) {
+			System.out.println("Approve initialized!!!");
 			this.approved = new String[this.matched.length][2];
 		}
 		this.approved[currMatch][0] = this.matched[currMatch][0];
@@ -140,7 +176,6 @@ public class ICController {
 	}
 	
 	public String[] getCompareImagePaths(int numPaths) {
-		System.out.println("called getCompareImagePaths with k "+ numPaths );
 		if (jpgImages == null) {
 			this.initImages();
 		}

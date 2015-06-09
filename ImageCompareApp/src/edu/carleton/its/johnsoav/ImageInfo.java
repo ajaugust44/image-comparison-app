@@ -294,7 +294,6 @@ public class ImageInfo {
         			if (y >= lowestRightPoint[0] / height){
         				lowestRightPoint[0] = (float) x / width;
         				lowestRightPoint[1] = (float) y / height;
-//        				System.out.println("resetting lowest point to " + x + ", "+y );
         			}
         		}
 			}
