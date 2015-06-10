@@ -2,9 +2,14 @@ package edu.carleton.its.johnsoav;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -23,6 +28,13 @@ import java.util.Calendar;
  *
  */
 public class ICModel {
+
+
+	public static void main(String[] args) {
+		ICModel m = new ICModel();
+
+		m.serializeImageSets();
+	}
 
 	/*
 	 * ----------------------
@@ -47,18 +59,21 @@ public class ICModel {
 	 * 
 	 * ----------------------
 	 */
-	
+
 	// These are lists of strings that contain the paths of all tifs and 
 	// jpgs, respectively
 	private ArrayList<String> tifSet;
 	private ArrayList<String> jpgSet;
-	
+
+	private ImageData[] tifData;
+	private ImageData[] jpgData;
+
 	public ICController controller;
 
 	// This array contains a list of all images that have been matched
 	// Element i contains a list [tifImagePath, jpgImagePath]
 	public String[][] matchedImages;
-	
+
 	// This array contains True if the user has approved the match and 
 	// False otherwise. If they have not approved the match, it is null
 	public boolean[] approved;
@@ -66,7 +81,7 @@ public class ICModel {
 	// This object generates the nearest (jpg) neighbors for the currently 
 	// selected "main image" (a tif)
 	ImageCompare neighborGenerator;
-	
+
 	// This contains the index in the tifSet of the current main image
 	int mainImageID;
 
@@ -80,8 +95,8 @@ public class ICModel {
 	 * 
 	 * ----------------------
 	 */
-	
-	
+
+
 	public ICModel() {
 		this.sessionID = -1;
 	}
@@ -95,8 +110,8 @@ public class ICModel {
 		jpgSet = this.getAllImagesInFolder(new File(
 				ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
 	}
-	
-	
+
+
 	/**
 	 * Looks through the file system and finds a list of all jpg images
 	 * 
@@ -124,6 +139,51 @@ public class ICModel {
 		}
 
 		return tifSet;
+	}
+
+	public void initData() {
+		if (this.tifSet == null || this.jpgSet == null) {
+			this.initImageSets();
+		}
+		this.tifData = new ImageData[tifSet.size()];
+
+		for (int i = 0; i < this.tifSet.size(); i ++) {
+			tifData[i] = new ImageData(tifSet.get(i));
+		}
+
+		this.jpgData = new ImageData[jpgSet.size()];
+
+		for (int i = 0; i < this.jpgSet.size(); i ++) {
+			jpgData[i] = new ImageData(jpgSet.get(i));
+		}
+
+	}
+
+	public void serializeImageSets() {
+		if (this.tifSet == null || this.jpgSet == null) {
+			this.initImageSets();
+		}
+		if (this.tifData == null || this.jpgData == null) {
+			this.initData();
+		}
+
+
+		try{ 
+			FileOutputStream fout = new FileOutputStream(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER + "/jpgData.est");
+			ObjectOutputStream oos = new ObjectOutputStream(fout);   
+			oos.writeObject(jpgData);
+
+			fout = new FileOutputStream(ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER + "/tifData.est");
+			oos = new ObjectOutputStream(fout);
+			oos.writeObject(tifData);
+
+
+			oos.close();
+			System.out.println("Serialization done");
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -176,7 +236,7 @@ public class ICModel {
 		this.neighborGenerator.setMainImage(this.mainImageID);
 	}
 
-	
+
 	/**
 	 * Selects the previous main image for comparison
 	 */
@@ -213,6 +273,30 @@ public class ICModel {
 		return this.neighborGenerator.getCompareImages(numNeighbors);
 	}
 
+	public void setData(String fileName) {
+		System.out.println("DATAFILE " + fileName);
+
+		try{
+			
+			FileInputStream fin = null;
+			ObjectInputStream ois = null;
+			if (fileName.contains("jpg")) {
+				fin = new FileInputStream(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER + "/jpgData.est");
+				ois = new ObjectInputStream(fin);
+				jpgData = (ImageData[]) ois.readObject();
+			} else if (fileName.contains("tif")) {
+				fin = new FileInputStream(ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER + "/tifData.est");
+				ois = new ObjectInputStream(fin);
+				tifData = (ImageData[]) ois.readObject();
+			} else {
+				return;
+			}
+			ois.close();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+
 
 	/*
 	 * ----------------------
@@ -221,7 +305,7 @@ public class ICModel {
 	 * 
 	 * ----------------------
 	 */
-	
+
 	/**
 	 * Goes through all of a given folder and creates an arrayList of all
 	 * filenames in that folder. Ignores folders.
@@ -234,7 +318,9 @@ public class ICModel {
 		for (final File fileEntry : folder.listFiles()) {
 			if (!fileEntry.isDirectory()) {
 				String fileName = fileEntry.getName();
-				if (fileName.charAt(0) != '.')
+				if (fileName.contains(".est")){
+					setData(fileName);
+				} else if (fileName.charAt(0) != '.')
 					res.add(fileEntry.getPath());
 			}
 		}
@@ -251,7 +337,7 @@ public class ICModel {
 		return this.writeToFile();
 	}
 
-	
+
 	/**
 	 *  Final save: master log and session file
 	 * @param imagesMatched: list of images that have been matched so far
@@ -328,7 +414,7 @@ public class ICModel {
 
 		return outputString;
 	}
-	
+
 	public void writeToMasterFile() {
 		File file = new File(ICModel.MASTER_LOG_PATH);
 
@@ -342,7 +428,7 @@ public class ICModel {
 				created = true;
 			}
 			out = new PrintWriter(new BufferedWriter(new FileWriter(ICModel.MASTER_LOG_PATH, true)));
-			
+
 			if (created)  {
 				outputString = "timeStamp\ttif name\tjpg name\n" + outputString;
 			}
@@ -399,6 +485,5 @@ public class ICModel {
 	public String getTimeStamp()  {
 		return (new Date()).toString();
 	}
-
 
 }

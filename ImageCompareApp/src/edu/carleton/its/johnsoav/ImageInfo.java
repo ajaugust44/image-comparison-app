@@ -55,6 +55,12 @@ public class ImageInfo {
 		this.initAll();
 	}
 	
+	public ImageInfo(String imagePath, float[] allInfo) {
+		this.path = imagePath;
+//		this.initImage(path);
+		this.allInfo = allInfo;
+	}
+	
 	
 	public void initImage(String imagePath) {
 		this.path = imagePath;
