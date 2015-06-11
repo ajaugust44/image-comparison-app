@@ -49,6 +49,34 @@ public class ImageCompare {
 		this.standardizeData();
 	}
 	
+	public ImageCompare(ImageData[] compareData, ImageData[] mainData) {
+		this.mainList = new float[mainData.length][ImageInfo.NUM_CHARS];
+		this.mainPaths = new String[mainData.length];
+		
+		System.out.println(mainData);
+		for (int i = 0; i < mainData.length; i ++) {
+			System.out.println("mainDataLength " + mainData.length);
+			System.out.println("mainData[" + i + "] = " + mainData[i] );
+			mainList[i] = mainData[i].data;
+			mainPaths[i] = mainData[i].path;
+		}
+		
+		this.compareImages = new float[compareData.length][ImageInfo.NUM_CHARS];
+		this.comparePaths = new String[compareData.length];
+		System.out.println("CompareDataLength " + compareData.length);
+		for (int i = 0; i < compareData.length; i ++) {
+			System.out.println("compareData[" + i + "] = " + compareData[i] );
+			compareImages[i] = compareData[i].data;
+			comparePaths[i] = compareData[i].path;
+		}
+		
+		this.mainImageID = -1;
+		this.mainImage = mainList[0];
+		
+		
+		this.standardizeData();
+	}
+	
 	/**
 	 * This function opens each image and creates an ImageInfo for it,
 	 * then gets the comparable information about the image.

@@ -27,6 +27,7 @@ public class ClickableImage {
 	}
 	
 	public ClickableImage(PApplet p, String imgPath, int x, int y, int w, int h, boolean quality) {
+		System.out.println("Image constructor");
 		this.init(p, imgPath, x, y, w, h, quality);
 	}
 	
@@ -40,8 +41,10 @@ public class ClickableImage {
 	
 	
 	private void init(PApplet p, String imgPath, int x, int y, int w, int h, boolean quality) {
+		System.out.println("Init image");
 		this.clickable = true;
 		this.parent = p;
+		System.out.println("getting as image");
 		this.image = getAsImage(imgPath, w, h, quality);
 		this.x = x;
 		this.y = y;
@@ -89,15 +92,18 @@ public class ClickableImage {
 	
 		
 	public BufferedImage resize(String fileName, int maxW, int maxH, boolean quality) {
+		System.out.println("resizing image");
 		BufferedImage bImg;
 		File f;
 		try {
+			System.out.println("getting file " + fileName);
 			f = new File(fileName);
 		} catch (Exception e) {
 			System.err.println("error opening file " + fileName );
 			return null;
 		}
 		try {
+			System.out.println("reading image");
 			bImg = ImageIO.read(f);
 			return resize(bImg, maxW, maxH, quality);
 		} catch (Exception e) {
@@ -107,11 +113,13 @@ public class ClickableImage {
 	}
 	
 	public BufferedImage resize(BufferedImage bImg, int maxW, int maxH, boolean quality) {
+		System.out.println("second resize, with a bImg");
 		int newW = maxW, newH = maxH;
 		
 		int oldW = bImg.getWidth();
 		int oldH = bImg.getHeight();
 		
+		System.out.println("getting info");
 		float ratio = (float)(oldW)/oldH;
 		if (ratio > (float)maxW/(float)maxH) {
 			// width is the limiting factor: scale down so newW = maxW
@@ -137,11 +145,17 @@ public class ClickableImage {
 	
 
 	public PImage getAsImage(String fileName, int maxWidth, int maxHeight, boolean quality) {
+		System.out.println("Getting image " + fileName + ", " + maxWidth + ", " + maxHeight);
 		try {
+			System.out.println("getting bImg");
 			BufferedImage bImg = resize(fileName, maxWidth, maxHeight, quality);
+			System.out.println("getting pImg");
 			PImage img=new PImage(bImg.getWidth(), bImg.getHeight(),PConstants.ARGB);
+			System.out.println("getting rgb");
 			bImg.getRGB(0, 0, img.width, img.height, img.pixels, 0, img.width);
+			System.out.println("updatingPixels");
 			img.updatePixels();
+			System.out.println("done");
 			return img;
 		}
 		catch(Exception e) {

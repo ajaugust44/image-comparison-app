@@ -53,7 +53,9 @@ public class ICController {
 	
 	public ICController() {
 		compareImage = 0;
+		System.out.println("creating model");
 		this.model = new ICModel();
+		System.out.println("created model");
 		this.model.setController(this);
 		this.currMatch = -1;
 	}
@@ -82,9 +84,6 @@ public class ICController {
 			return;
 		}
 		ArrayList<String[]> matchedAL = new ArrayList<String[]>(model.mainImageID);
-		if (this.approved != null) {
-			model.approved = new boolean[matchedAL.size()];
-		}
 		for (int i = 0; i < this.selectedCompares.length; i ++) {
 			if (this.selectedCompares[i] == null) {
 				break;
@@ -94,11 +93,11 @@ public class ICController {
 			} else {
 				if (this.approved[i][0] != null) {
 					matchedAL.add(new String[] {this.approved[i][0], this.approved[i][1]});
-					model.approved[i] = true;
 				}
 				
 			}
 		}
+		
 		String[][] a = new String[matchedAL.size()][2];
 		matchedAL.toArray(a);
 		if (this.approved == null) {

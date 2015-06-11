@@ -33,10 +33,13 @@ public class ICView extends PApplet{
 	
 	public void setup() {
 		size(min(WIDTH, displayWidth), min(displayHeight - 100, HEIGHT));
+		System.out.println("creating controller");
 		this.controller = new ICController();
+		System.out.println("Controller created");
 		this.controller.setView(this);
 		initViews();
 		
+		System.out.println("setting up viewCompare");
 		views[currView].setup();
 		
 		loadingImg = new Gif(this, "../res/loading.gif");

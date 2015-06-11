@@ -202,6 +202,7 @@ public class ViewCompare implements SubView{
 	 */
 
 	public void nextImage() {
+		System.out.println("in nextImage");
 		this.loading = true;
 		this.selectedImage = null;
 		this.currCompareImages = 1;
@@ -219,7 +220,6 @@ public class ViewCompare implements SubView{
 
 		String mainImagePath = controller.getMainCompareImagePath();
 		String[] compareImagePaths = controller.getCompareImagePaths(ViewCompare.numCompareImages);
-
 		if (mainImagePath == null) {
 			System.out.println("REACHED END");
 
@@ -230,9 +230,13 @@ public class ViewCompare implements SubView{
 			this.loading = false;
 			return;
 		}
+		
+		System.out.println("Getting main clickable image");
 		mainImage = new ClickableImage(parent, mainImagePath, 0, 0, (int)(parent.width/(2.5)), parent.height, true);
 		mainImage.setClickable(false);
-
+		System.out.println("Got main clickable image");
+		
+		System.out.println("Getting clickable compare images");
 		compareImages = new ClickableImage[ViewCompare.numCompareImages];
 
 		int imgWidth =  getSmallImageWidth();
@@ -241,7 +245,7 @@ public class ViewCompare implements SubView{
 		int row, col, newX, newY;
 
 		for (int i = 0; i < ViewCompare.numCompareImages; i++) {
-			if (compareImagePaths[i] == null) {
+			if (compareImagePaths[i] == null) { //TODO FIX BUG
 				return;
 			}
 			row = i / (ViewCompare.numCompareImages/ViewCompare.numRows);
@@ -250,8 +254,9 @@ public class ViewCompare implements SubView{
 			newX = mainImage.x + mainImage.width + col * (imgWidth + padding) + padding;
 			newY = row * (imgHeight + padding) + padding;
 			compareImages[i] = new ClickableImage(parent, compareImagePaths[i], newX, newY, imgWidth, imgHeight, false);
+			System.out.println("Got clickable compare image " + i);
 		}
-
+		System.out.println("Got all images");
 
 		System.gc();
 		this.loading = false;

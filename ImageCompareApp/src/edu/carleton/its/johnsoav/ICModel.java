@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -45,10 +46,13 @@ public class ICModel {
 	 */
 
 	public static final String IMAGE_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/";
-	public static final String JPEG_FOLDER = "jpgSmallTest/";
-	public static final String TIFF_FOLDER = "tiffSmallTest/";
+	public static final String JPEG_FOLDER = "jpgTestSet/";
+	public static final String TIFF_FOLDER = "tiffTestSet/";
 	public static final String OUTPUT_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/output/";
 	//	public static final String OUTPUT_PATH = System.getProperty("user.home") + "/Dropbox/";
+
+	public static final String RENAMED_FOLDER = System.getProperty("user.home") + "/work2/esternayFileCompare/renamedTiffs/";
+	public static final String USED_JPG_FOLDER = System.getProperty("user.home") + "/work2/esternayFileCompare/usedJPGs/";
 
 	public static final String MASTER_LOG_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/output/masterLog.txt";
 
@@ -73,10 +77,6 @@ public class ICModel {
 	// This array contains a list of all images that have been matched
 	// Element i contains a list [tifImagePath, jpgImagePath]
 	public String[][] matchedImages;
-
-	// This array contains True if the user has approved the match and 
-	// False otherwise. If they have not approved the match, it is null
-	public boolean[] approved;
 
 	// This object generates the nearest (jpg) neighbors for the currently 
 	// selected "main image" (a tif)
@@ -219,7 +219,11 @@ public class ICModel {
 		if (this.jpgSet == null || this.tifSet == null) {
 			this.initImageSets();
 		}
-		this.neighborGenerator = new ImageCompare(this.jpgSet, this.tifSet);
+		if (this.jpgData != null && this.tifData != null) {
+			this.neighborGenerator = new ImageCompare(this.jpgData, this.tifData);
+		} else {
+			this.neighborGenerator = new ImageCompare(this.jpgSet, this.tifSet);
+		}
 		this.mainImageID = 0;
 		neighborGenerator.setMainImage(this.mainImageID);
 	}
@@ -277,7 +281,7 @@ public class ICModel {
 		System.out.println("DATAFILE " + fileName);
 
 		try{
-			
+
 			FileInputStream fin = null;
 			ObjectInputStream ois = null;
 			if (fileName.contains("jpg")) {
@@ -346,7 +350,9 @@ public class ICModel {
 	public void completeSession(String[][] imagesMatched) {
 		this.matchedImages = imagesMatched;
 		this.writeToFile();
+		this.renameAndReserialize();
 		this.writeToMasterFile();
+
 	}
 
 	/*
@@ -364,9 +370,6 @@ public class ICModel {
 		String timeStamp = getTimeStamp();
 		for (int i = 0; i < this.matchedImages.length; i++) {
 			outputString += timeStamp + "\t" + this.matchedImages[i][1] + "\t" + this.matchedImages[i][0];
-			if (this.approved != null) {
-				outputString += (approved[i]) ? "approved" : "condemned";
-			}
 			outputString += "\n";
 		}
 
@@ -399,6 +402,81 @@ public class ICModel {
 		}
 	}
 
+	public void renameAndReserialize() {
+		// Go through approved tif/jpg matches
+		// Rename the tifs to have the same name as the jpgs + tif
+
+		ImageData[] newTifData = new ImageData[this.tifData.length - matchedImages.length];
+		ImageData[] newJPGData = new ImageData[this.jpgData.length - matchedImages.length];
+
+		String jpgName, newTifName, oldTifName;
+		for (int i = 0; i < this.matchedImages.length; i ++) {
+			jpgName = this.matchedImages[i][0];
+			jpgName = this.getImageName(jpgName);
+			newTifName = jpgName.substring(0, jpgName.length() - 4) + ".tif";
+			System.out.println("new tif name " + newTifName);
+
+			try{
+				File tifFile = new File(this.matchedImages[i][1]);
+				oldTifName = tifFile.getName();
+				File jpgFile = new File(this.matchedImages[i][0]);
+				if(tifFile.renameTo(new File(ICModel.RENAMED_FOLDER + newTifName))){
+					System.out.println("Successfully renamed " + newTifName);
+					for(int j = 0; j < this.tifData.length; j++) {
+
+						if (this.tifData[j] != null) {
+							if (oldTifName.equals(this.getImageName(this.tifData[j].path))) {
+								this.tifData[j] = null;
+							}
+						}
+					}
+				} else{
+					System.out.println("Unsuccessful move " + newTifName );
+					System.out.println();
+				}
+				if(jpgFile.renameTo(new File(ICModel.USED_JPG_FOLDER + jpgFile.getName()))){
+					System.out.println("Successfully renamed " + jpgFile.getName());
+					for(int j = 0; j < this.jpgData.length; j++) {
+						if (this.jpgData[j] != null) {
+							if (jpgName.equals(this.getImageName(this.jpgData[j].path))) {
+								System.out.println("removing " + jpgData[j] + " at " + j);
+								this.jpgData[j] = null;
+								
+							}
+						}
+					}
+				} else{
+					System.out.println("Unsuccessful move " + jpgFile.getName() );
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		int j = 0;
+		for (int i = 0; i < tifData.length; i++) {
+			if (tifData[i] != null) {
+				newTifData[j] = tifData[i];
+				j++;
+			}
+		}
+		j = 0;
+		for (int i = 0; i < jpgData.length; i++) {
+			if (jpgData[i] != null) {
+				newJPGData[j] = jpgData[i];
+				j++;
+			}
+		}
+		
+		this.tifData = newTifData;
+		this.jpgData = newJPGData;
+		
+		
+		this.serializeImageSets();
+
+		// Create tifData again, then serialize that again. (delete old file
+		// then recreate, to be safe.
+	}
+
 	private String generateMasterFileString(){
 		// in format:
 		// timestamp	tifName1	match
@@ -406,14 +484,16 @@ public class ICModel {
 		String timeStamp = getTimeStamp();
 		for (int i = 0; i < this.matchedImages.length; i++) {
 			outputString += timeStamp + "\t" + this.matchedImages[i][1] + "\t" + this.matchedImages[i][0];
-			if (this.approved != null) {
-				outputString += (approved[i]) ? "approved" : "condemned";
-			}
 			outputString += "\n";
 		}
 
 		return outputString;
 	}
+
+
+
+
+
 
 	public void writeToMasterFile() {
 		File file = new File(ICModel.MASTER_LOG_PATH);
