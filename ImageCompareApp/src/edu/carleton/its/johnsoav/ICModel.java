@@ -9,13 +9,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
-import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Calendar;
 
 
 /**
@@ -414,7 +411,6 @@ public class ICModel {
 			jpgName = this.matchedImages[i][0];
 			jpgName = this.getImageName(jpgName);
 			newTifName = jpgName.substring(0, jpgName.length() - 4) + ".tif";
-			System.out.println("new tif name " + newTifName);
 
 			try{
 				File tifFile = new File(this.matchedImages[i][1]);
@@ -423,7 +419,6 @@ public class ICModel {
 				if(tifFile.renameTo(new File(ICModel.RENAMED_FOLDER + newTifName))){
 					System.out.println("Successfully renamed " + newTifName);
 					for(int j = 0; j < this.tifData.length; j++) {
-
 						if (this.tifData[j] != null) {
 							if (oldTifName.equals(this.getImageName(this.tifData[j].path))) {
 								this.tifData[j] = null;

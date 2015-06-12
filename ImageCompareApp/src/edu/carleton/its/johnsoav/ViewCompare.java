@@ -73,8 +73,11 @@ public class ViewCompare implements SubView{
 	}
 
 	public void setup() {
+		System.out.println("IN VIEWCOMPARE SETUP");
+		parent.background(255);
+		
 		parent.thread("callThread");
-		//		nextImage();
+		nextImage();
 	}
 
 	public void initButtons() {
@@ -124,6 +127,13 @@ public class ViewCompare implements SubView{
 	 */
 
 	public void draw() {
+		
+		if (parent.mousePressed) {
+			System.out.println("mouse pressed in compare");
+			parent.fill(255, 0, 0);
+			parent.rect(0, 0, 50, 50);
+		}
+		
 		this.drawSelectedBox();
 		this.drawImages();
 		this.drawButtons();
@@ -202,7 +212,6 @@ public class ViewCompare implements SubView{
 	 */
 
 	public void nextImage() {
-		System.out.println("in nextImage");
 		this.loading = true;
 		this.selectedImage = null;
 		this.currCompareImages = 1;
@@ -231,12 +240,9 @@ public class ViewCompare implements SubView{
 			return;
 		}
 		
-		System.out.println("Getting main clickable image");
 		mainImage = new ClickableImage(parent, mainImagePath, 0, 0, (int)(parent.width/(2.5)), parent.height, true);
 		mainImage.setClickable(false);
-		System.out.println("Got main clickable image");
 		
-		System.out.println("Getting clickable compare images");
 		compareImages = new ClickableImage[ViewCompare.numCompareImages];
 
 		int imgWidth =  getSmallImageWidth();
@@ -254,9 +260,7 @@ public class ViewCompare implements SubView{
 			newX = mainImage.x + mainImage.width + col * (imgWidth + padding) + padding;
 			newY = row * (imgHeight + padding) + padding;
 			compareImages[i] = new ClickableImage(parent, compareImagePaths[i], newX, newY, imgWidth, imgHeight, false);
-			System.out.println("Got clickable compare image " + i);
 		}
-		System.out.println("Got all images");
 
 		System.gc();
 		this.loading = false;

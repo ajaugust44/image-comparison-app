@@ -55,17 +55,13 @@ public class ImageCompare {
 		
 		System.out.println(mainData);
 		for (int i = 0; i < mainData.length; i ++) {
-			System.out.println("mainDataLength " + mainData.length);
-			System.out.println("mainData[" + i + "] = " + mainData[i] );
 			mainList[i] = mainData[i].data;
 			mainPaths[i] = mainData[i].path;
 		}
 		
 		this.compareImages = new float[compareData.length][ImageInfo.NUM_CHARS];
 		this.comparePaths = new String[compareData.length];
-		System.out.println("CompareDataLength " + compareData.length);
 		for (int i = 0; i < compareData.length; i ++) {
-			System.out.println("compareData[" + i + "] = " + compareData[i] );
 			compareImages[i] = compareData[i].data;
 			comparePaths[i] = compareData[i].path;
 		}
