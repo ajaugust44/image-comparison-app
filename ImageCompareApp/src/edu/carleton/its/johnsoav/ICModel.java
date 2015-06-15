@@ -31,7 +31,13 @@ public class ICModel {
 	public static void main(String[] args) {
 		ICModel m = new ICModel();
 
+		
+//		m.setupFileStructure();
+		
 		m.serializeImageSets();
+		
+		
+		
 	}
 
 	/*
@@ -41,18 +47,19 @@ public class ICModel {
 	 * 
 	 * ----------------------
 	 */
+	
+	public static final String MAIN_PATH = System.getProperty("user.dir");
+	public static final String RELATIVE_PATH = "/ImageCompApp/";
+	
+	public static final String JPG_FOLDER = ICModel.MAIN_PATH + ICModel.RELATIVE_PATH +  "jpgSet/";
+	public static final String TIF_FOLDER = ICModel.MAIN_PATH + ICModel.RELATIVE_PATH + "tifSet/";
+	public static final String LOG_PATH = ICModel.MAIN_PATH + ICModel.RELATIVE_PATH + "logs/";
 
-	public static final String IMAGE_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/";
-	public static final String JPEG_FOLDER = "jpgTestSet/";
-	public static final String TIFF_FOLDER = "tiffTestSet/";
-	public static final String OUTPUT_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/output/";
-	//	public static final String OUTPUT_PATH = System.getProperty("user.home") + "/Dropbox/";
-
-	public static final String RENAMED_FOLDER = System.getProperty("user.home") + "/work2/esternayFileCompare/renamedTiffs/";
-	public static final String USED_JPG_FOLDER = System.getProperty("user.home") + "/work2/esternayFileCompare/usedJPGs/";
-
-	public static final String MASTER_LOG_PATH = System.getProperty("user.home") + "/work2/esternayFileCompare/output/masterLog.txt";
-
+	public static final String JPG_OUTPUT = ICModel.MAIN_PATH + ICModel.RELATIVE_PATH + "matchedJPGs/";
+	public static final String TIF_OUTPUT = ICModel.MAIN_PATH + ICModel.RELATIVE_PATH + "matchedTIFs/";
+	
+	
+	
 	/*
 	 * ----------------------
 	 * 
@@ -102,22 +109,19 @@ public class ICModel {
 	 * Initializes both image sets.
 	 */
 	public void initImageSets() {
-		tifSet = this.getAllImagesInFolder(new File(
-				ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER));
-		jpgSet = this.getAllImagesInFolder(new File(
-				ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
+		tifSet = this.getAllImagesInFolder(new File(ICModel.TIF_FOLDER));
+		jpgSet = this.getAllImagesInFolder(new File(ICModel.JPG_FOLDER));
 	}
 
 
 	/**
 	 * Looks through the file system and finds a list of all jpg images
 	 * 
-	 * FIXME CAN READ IN FROM TEXT FILE INSTEAD TO GET INFO
 	 * @return ArrayList of string jpg paths
 	 */
 	public ArrayList<String> getJPGImages() {
 		if(jpgSet == null) {
-			jpgSet = getAllImagesInFolder(new File(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER));
+			jpgSet = getAllImagesInFolder(new File(ICModel.JPG_FOLDER));
 		}
 
 		return jpgSet;
@@ -126,13 +130,12 @@ public class ICModel {
 	/**
 	 * Looks through the file system and finds a list of all tif images
 	 * 
-	 * FIXME Why not these too? (then we can standardize? And it's faster!)
 	 * 
 	 * @return ArrayList of string tif paths
 	 */
 	public ArrayList<String> getTIFImages() {
 		if(tifSet == null) {
-			tifSet = getAllImagesInFolder(new File(ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER));
+			tifSet = getAllImagesInFolder(new File(ICModel.TIF_FOLDER));
 		}
 
 		return tifSet;
@@ -166,11 +169,11 @@ public class ICModel {
 
 
 		try{ 
-			FileOutputStream fout = new FileOutputStream(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER + "/jpgData.est");
+			FileOutputStream fout = new FileOutputStream(ICModel.JPG_FOLDER + "/jpgData.est");
 			ObjectOutputStream oos = new ObjectOutputStream(fout);   
 			oos.writeObject(jpgData);
 
-			fout = new FileOutputStream(ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER + "/tifData.est");
+			fout = new FileOutputStream(ICModel.TIF_FOLDER + "/tifData.est");
 			oos = new ObjectOutputStream(fout);
 			oos.writeObject(tifData);
 
@@ -189,7 +192,7 @@ public class ICModel {
 	 */
 	public void initSessionNumber() {
 		ArrayList<String> sessionNames = this.getAllImagesInFolder(
-				new File(ICModel.OUTPUT_PATH));
+				new File(ICModel.LOG_PATH));
 		int largest = 0;
 		int curr = -1;
 		for (int i = 0; i < sessionNames.size(); i++) {
@@ -282,11 +285,11 @@ public class ICModel {
 			FileInputStream fin = null;
 			ObjectInputStream ois = null;
 			if (fileName.contains("jpg")) {
-				fin = new FileInputStream(ICModel.IMAGE_PATH + ICModel.JPEG_FOLDER + "/jpgData.est");
+				fin = new FileInputStream(ICModel.JPG_FOLDER + "/jpgData.est");
 				ois = new ObjectInputStream(fin);
 				jpgData = (ImageData[]) ois.readObject();
 			} else if (fileName.contains("tif")) {
-				fin = new FileInputStream(ICModel.IMAGE_PATH + ICModel.TIFF_FOLDER + "/tifData.est");
+				fin = new FileInputStream(ICModel.TIF_FOLDER + "/tifData.est");
 				ois = new ObjectInputStream(fin);
 				tifData = (ImageData[]) ois.readObject();
 			} else {
@@ -352,10 +355,53 @@ public class ICModel {
 
 	}
 
+	
+	public void setupFileStructure() {
+		File relPath = new File(ICModel.MAIN_PATH + ICModel.RELATIVE_PATH);
+		if (!relPath.exists() && relPath.mkdir()) {
+			System.out.println("created dir");
+		}
+		
+		File jpgs = new File(ICModel.JPG_FOLDER);
+		if (!jpgs.exists()) {
+			if (!jpgs.mkdir()) {
+				System.out.println("failed to make jpgSet");
+			}
+			System.out.println("created dir");
+		}
+		System.out.println("File " + jpgs.getAbsolutePath() + " exists? " + jpgs.exists());
+		
+		File tifs = new File(ICModel.TIF_FOLDER);
+		if (!tifs.exists() && tifs.mkdir()) {
+			System.out.println("created dir");
+		}
+		
+		File logs = new File(ICModel.LOG_PATH);
+		if (!logs.exists() && logs.mkdir()) {
+			System.out.println("created dir");
+		}
+
+		File jpgOut = new File(ICModel.JPG_OUTPUT);
+		if (!jpgOut.exists() && jpgOut.mkdir()) {
+			System.out.println("created dir");
+		}
+		
+		File tifOut = new File(ICModel.TIF_OUTPUT);
+		if (!tifOut.exists() && tifOut.mkdir()) {
+			System.out.println("created dir");
+		}
+		
+		System.out.println("Done creating directories. Please move image files\n"
+				+ "to jpgSet and tifSet folders and run the next step");
+		
+		
+	}
+	
+	
 	/*
 	 * ----------------------
 	 * 
-	 * 	Methods
+	 * 	Save Methods
 	 * 
 	 * ----------------------
 	 */
@@ -366,7 +412,11 @@ public class ICModel {
 		String outputString = "timeStamp\ttif name\tjpg name\n";
 		String timeStamp = getTimeStamp();
 		for (int i = 0; i < this.matchedImages.length; i++) {
-			outputString += timeStamp + "\t" + this.matchedImages[i][1] + "\t" + this.matchedImages[i][0];
+			String tifString = (this.matchedImages[i][1]).substring(ICModel.MAIN_PATH.length()-1);
+			String jpgString = this.matchedImages[i][0];
+			
+			
+			outputString += timeStamp + "\t" + tifString + "\t" + jpgString;
 			outputString += "\n";
 		}
 
@@ -381,7 +431,7 @@ public class ICModel {
 		String outputString = generateFileString();
 
 		try {
-			File file = new File(ICModel.OUTPUT_PATH + "session"+ sessionNumber +".txt");
+			File file = new File(ICModel.LOG_PATH + "session"+ sessionNumber +".txt");
 
 			// if file doesn't exists, then create it
 			if (!file.exists()) {
@@ -400,6 +450,9 @@ public class ICModel {
 	}
 
 	public void renameAndReserialize() {
+		if (this.matchedImages.length == 0) {
+			return;
+		}
 		// Go through approved tif/jpg matches
 		// Rename the tifs to have the same name as the jpgs + tif
 
@@ -416,7 +469,7 @@ public class ICModel {
 				File tifFile = new File(this.matchedImages[i][1]);
 				oldTifName = tifFile.getName();
 				File jpgFile = new File(this.matchedImages[i][0]);
-				if(tifFile.renameTo(new File(ICModel.RENAMED_FOLDER + newTifName))){
+				if(tifFile.renameTo(new File(ICModel.TIF_OUTPUT + newTifName))){
 					System.out.println("Successfully renamed " + newTifName);
 					for(int j = 0; j < this.tifData.length; j++) {
 						if (this.tifData[j] != null) {
@@ -429,7 +482,7 @@ public class ICModel {
 					System.out.println("Unsuccessful move " + newTifName );
 					System.out.println();
 				}
-				if(jpgFile.renameTo(new File(ICModel.USED_JPG_FOLDER + jpgFile.getName()))){
+				if(jpgFile.renameTo(new File(ICModel.JPG_OUTPUT + jpgFile.getName()))){
 					System.out.println("Successfully renamed " + jpgFile.getName());
 					for(int j = 0; j < this.jpgData.length; j++) {
 						if (this.jpgData[j] != null) {
@@ -486,12 +539,8 @@ public class ICModel {
 	}
 
 
-
-
-
-
 	public void writeToMasterFile() {
-		File file = new File(ICModel.MASTER_LOG_PATH);
+		File file = new File(ICModel.LOG_PATH);
 
 		String outputString = generateMasterFileString();
 		PrintWriter out = null;
@@ -502,7 +551,7 @@ public class ICModel {
 				file.createNewFile();
 				created = true;
 			}
-			out = new PrintWriter(new BufferedWriter(new FileWriter(ICModel.MASTER_LOG_PATH, true)));
+			out = new PrintWriter(new BufferedWriter(new FileWriter(ICModel.LOG_PATH + "masterLog.txt", true)));
 
 			if (created)  {
 				outputString = "timeStamp\ttif name\tjpg name\n" + outputString;
@@ -560,5 +609,4 @@ public class ICModel {
 	public String getTimeStamp()  {
 		return (new Date()).toString();
 	}
-
 }

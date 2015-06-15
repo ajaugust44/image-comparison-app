@@ -32,7 +32,6 @@ public class ICView extends PApplet{
 	Gif loadingImg;
 
 
-
 	public void setup() {
 		System.out.println("arrived in setup **************");
 		size(min(WIDTH, displayWidth-1), min(displayHeight - 100, HEIGHT));
@@ -45,9 +44,10 @@ public class ICView extends PApplet{
 		System.out.println("setting up viewCompare");
 		views[currView].setup();
 
-		//		loadingImg = new Gif(this, System.getProperty("user.home") + "git/image-comparison-app/ImageCompareApp/res/loading.gif");
-		//		loadingImg.ignoreRepeat();
-		//		loadingImg.loop();
+		loadingImg = new Gif(this, ICModel.MAIN_PATH + "/loading.gif");
+		loadingImg.ignoreRepeat();
+		loadingImg.loop();
+
 
 	}
 
@@ -58,7 +58,7 @@ public class ICView extends PApplet{
 			views[currView].setup();
 		} 
 		if (views[currView].isLoading()) {
-			//				this.drawLoading();
+			this.drawLoading();
 		} else {
 			background(ICView.backgroundColor);
 			views[currView].draw();
@@ -77,8 +77,8 @@ public class ICView extends PApplet{
 	}
 
 	public void drawLoading() {
-//		int gifHeight = 200, gifWidth = 400;
-		//		image(this.loadingImg, this.width/2 - (gifWidth/2), this.height/2 - (gifHeight/2), gifWidth, gifHeight);
+		int gifHeight = 200, gifWidth = 400;
+		image(this.loadingImg, this.width/2 - (gifWidth/2), this.height/2 - (gifHeight/2), gifWidth, gifHeight);
 	}
 
 	public void mousePressed() {

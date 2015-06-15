@@ -13,7 +13,7 @@ import java.lang.Math;
 
 
 public class ImageCompare {
-	
+
 	/*
 	 * ----------------------
 	 * 
@@ -21,20 +21,20 @@ public class ImageCompare {
 	 * 
 	 * ----------------------
 	 */
-	
+
 	float[][] compareImages;
 	String[] comparePaths;
 	float[][] standardizedCompare;
-	
+
 	private float[][] mainList;
 	private String[] mainPaths; 
 	private float[][] standardizedMain;
-	
+
 	float[] mainImage;
 	int mainImageID;
-	
+
 	int[] nearestNeighbors;
-	
+
 
 	/**
 	 * Constructor: Opens and analyzes each image in preparation for the nearest neighbor
@@ -43,36 +43,36 @@ public class ImageCompare {
 	 * @param compare
 	 * @param mains
 	 */
-	
+
 	public ImageCompare(ArrayList<String> compare, ArrayList<String> mains) {
 		this.getImageSet(compare, mains);
 		this.standardizeData();
 	}
-	
+
 	public ImageCompare(ImageData[] compareData, ImageData[] mainData) {
 		this.mainList = new float[mainData.length][ImageInfo.NUM_CHARS];
 		this.mainPaths = new String[mainData.length];
-		
+
 		System.out.println(mainData);
 		for (int i = 0; i < mainData.length; i ++) {
 			mainList[i] = mainData[i].data;
 			mainPaths[i] = mainData[i].path;
 		}
-		
+
 		this.compareImages = new float[compareData.length][ImageInfo.NUM_CHARS];
 		this.comparePaths = new String[compareData.length];
 		for (int i = 0; i < compareData.length; i ++) {
 			compareImages[i] = compareData[i].data;
 			comparePaths[i] = compareData[i].path;
 		}
-		
+
 		this.mainImageID = -1;
 		this.mainImage = mainList[0];
-		
-		
+
+
 		this.standardizeData();
 	}
-	
+
 	/**
 	 * This function opens each image and creates an ImageInfo for it,
 	 * then gets the comparable information about the image.
@@ -98,10 +98,15 @@ public class ImageCompare {
 			mainList[i] = img.getAllInfo();
 			mainPaths[i] = img.getImagePath();
 		}
+		if (mainList.length == 0) {
+			this.mainImage = null;
+			this.mainImageID = 0;
+			return;
+		}
 		this.mainImageID = -1;
 		this.mainImage = mainList[0];
 	}
-	
+
 	/**
 	 * Calculates the nearestNeighbors for the current mainImage
 	 * Doesn't take very long for any one image.
@@ -114,16 +119,16 @@ public class ImageCompare {
 			DistanceNode node = new DistanceNode(i, this.standardizedMain[this.mainImageID], this.standardizedCompare[i]);
 			neighbors.offer(node);
 		}
-		
+
 		this.nearestNeighbors = new int[neighbors.size()];
 		for (int i = neighbors.size() - 1; i >= 0; i --) {
 			DistanceNode n = neighbors.poll();
 			nearestNeighbors[i] = n.getID();
 		}
-		
+
 	}
-	
-	
+
+
 	/*
 	 * ----------------------
 	 * 
@@ -134,9 +139,9 @@ public class ImageCompare {
 	public void standardizeData() {
 		this.standardizedCompare = new float[this.compareImages.length][ImageInfo.NUM_CHARS];
 		this.standardizedMain = new float[this.mainList.length][ImageInfo.NUM_CHARS];
-		
+
 		float[][] allData = new float[this.standardizedCompare.length + this.standardizedMain.length][ImageInfo.NUM_CHARS];
-		
+
 		for (int i = 0; i < this.standardizedCompare.length; i ++) {
 			allData[i] = this.compareImages[i];
 		}
@@ -144,29 +149,34 @@ public class ImageCompare {
 			allData[i + this.standardizedCompare.length] = this.mainList[i];
 		}
 		allData = standardizeList(allData);
-		
+
 		for (int i = 0; i < this.standardizedCompare.length; i ++) {
 			this.standardizedCompare[i] = allData[i];
 		}
 		for (int i = 0; i < this.standardizedMain.length; i ++) {
 			this.standardizedMain[i] = allData[i + this.standardizedCompare.length];
 		}
-		
+
 	}
-	
+
 	public float[][] standardizeList(float[][] data) {
 		float[][] flipped = flipTable(data);
-		
-		float[][] standardized = new float[flipped.length][flipped[0].length];
-		
+
+		float[][] standardized = new float[0][0];
+		if (flipped.length > 0)
+			standardized = new float[flipped.length][flipped[0].length];
+
 		for (int c = 0; c < flipped.length; c ++ ) {
 			standardized[c] = standardizeColumn(flipped[c], c);
 		}
-		
+
 		return flipTable(standardized);
 	}
-	
+
 	public float[][] flipTable(float[][] data) {
+		if (data.length == 0) {
+			return new float[0][0];
+		}
 		float[][] flipped = new float[data[0].length][data.length];
 		for (int i = 0; i < data.length; i ++) {
 			for (int j = 0; j < data[i].length; j ++) {
@@ -175,31 +185,31 @@ public class ImageCompare {
 		}
 		return flipped;
 	}
-	
+
 	public float[] standardizeColumn(float[] data, int columnID) {
-		
+
 		float average = 0;
 		for (int i = 0; i < data.length; i++) {
 			average += data[i];
 		}
 		average /= data.length;
-		
+
 		float variance = 0;
 		for (int i = 0; i < data.length; i++) {
 			variance += average - (data[i] * data[i]);
 		}
 		variance = (float) Math.sqrt(Math.abs(variance/data.length));
-		
-		
+
+
 		float[] standardized = new float[data.length];
-		
+
 		for (int i = 0; i < data.length; i++) {
 			standardized[i] = (data[i] - average)/variance;
 		}
 		return standardized;
 	}	
-	
-	
+
+
 	/*
 	 * ----------------------
 	 * 
@@ -216,7 +226,7 @@ public class ImageCompare {
 		}
 		this.mainImageID = newID;
 		this.nearestNeighbors = null;
-		
+
 		System.out.println("Updating mainImage " + this.mainImageID + " " + this.mainList.length);
 		this.mainImage = this.mainList[this.mainImageID];
 		this.getKNN(ViewCompare.numCompareImages);
@@ -242,6 +252,6 @@ public class ImageCompare {
 		}
 		return res;
 	}
-	
+
 
 }
