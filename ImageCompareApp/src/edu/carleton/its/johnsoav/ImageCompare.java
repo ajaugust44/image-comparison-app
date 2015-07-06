@@ -253,5 +253,4 @@ public class ImageCompare {
 		return res;
 	}
 
-
 }
